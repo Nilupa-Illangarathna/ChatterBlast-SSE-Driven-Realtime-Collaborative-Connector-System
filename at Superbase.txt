@@ -1,0 +1,16 @@
+in superbase, 
+
+SQL Editor -> run this query to create the rooms table
+
+/////////////////////////////////////////
+CREATE TABLE IF NOT EXISTS rooms (
+  room_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  room_url VARCHAR(255) NOT NULL,
+  room_creator_username VARCHAR(255) NOT NULL,
+  room_creator_id UUID NOT NULL,
+  room_created_at TIMESTAMPTZ DEFAULT current_timestamp,
+  joiners JSONB NOT NULL DEFAULT '{}',
+  UNIQUE (room_url)
+);
+
+/////////////////////////////////////////

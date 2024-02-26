@@ -1,0 +1,55 @@
+<!-- views/admin-ui.ejs -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin UI</title>
+</head>
+<body>
+  <h1>Welcome <%= username %> to the Admin UI</h1>
+  
+  <!-- Room Details -->
+  <p>This is Admin's room</p>
+  <p>Admin: <%= username %></p>
+  
+  <!-- Copy URL Button -->
+  <button onclick="copyToClipboard('<%= roomUrl %>')">Copy URL</button>
+
+  <!-- Messaging Form -->
+  <form action="/send-message" method="POST">
+    <label for="message">Send Message:</label>
+    <input type="text" id="message" name="message" required>
+    <button type="submit">Send</button>
+  </form>
+
+  <!-- Display Messages -->
+  <ul id="messages"></ul>
+
+  <script>
+    // Use Socket.IO to listen for real-time messages
+    const socket = io();
+
+
+
+    socket.on('message', (msg) => {
+      const messagesList = document.getElementById('messages');
+      const li = document.createElement('li');
+      li.textContent = msg;
+      messagesList.appendChild(li);
+    });
+
+    // Function to copy URL to clipboard
+    function copyToClipboard(url) {
+      const el = document.createElement('textarea');
+      el.value = url;
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand('copy');
+      document.body.removeChild(el);
+      alert('URL copied to clipboard!');
+    }
+  </script>
+</body>
+</html>
