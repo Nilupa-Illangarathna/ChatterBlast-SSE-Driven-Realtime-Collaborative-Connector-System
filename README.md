@@ -1,4 +1,3 @@
-#!/bin/bash
 
 # Create the Markdown file
 cat <<EOF > ChatterBlast.md
