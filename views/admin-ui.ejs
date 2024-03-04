@@ -10,13 +10,6 @@
 <body>
   <h1>Welcome <%= username %> to the Admin UI</h1>
   
-  <!-- Room Details -->
-  <p>This is Admin's room</p>
-  <p>Admin: <%= username %></p>
-  
-  <!-- Copy URL Button -->
-  <button onclick="copyToClipboard('<%= roomUrl %>')">Copy URL</button>
-
   <!-- Messaging Form -->
   <form action="/send-message" method="POST">
     <label for="message">Send Message:</label>
@@ -31,25 +24,12 @@
     // Use Socket.IO to listen for real-time messages
     const socket = io();
 
-
-
     socket.on('message', (msg) => {
       const messagesList = document.getElementById('messages');
       const li = document.createElement('li');
       li.textContent = msg;
       messagesList.appendChild(li);
     });
-
-    // Function to copy URL to clipboard
-    function copyToClipboard(url) {
-      const el = document.createElement('textarea');
-      el.value = url;
-      document.body.appendChild(el);
-      el.select();
-      document.execCommand('copy');
-      document.body.removeChild(el);
-      alert('URL copied to clipboard!');
-    }
   </script>
 </body>
 </html>

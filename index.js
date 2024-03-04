@@ -3,7 +3,6 @@ const express = require('express');
 const { createServer } = require('http');
 const { Server } = require('socket.io');
 const { createClient } = require('@supabase/supabase-js');
-const { v4: uuidv4 } = require('uuid');
 
 const app = express();
 const server = createServer(app);
@@ -38,10 +37,7 @@ app.get('/admin-ui/:username', async (req, res) => {
   // Check if the table exists, if not, create it
   await createTableIfNotExists(username);
 
-  // Generate the URL for the created room
-  const roomUrl = `http://localhost:3000/join-room?username=${username}&url=${username}`;
-
-  res.render('admin-ui', { username, roomUrl });
+  res.render('admin-ui', { username });
 });
 
 app.get('/join-ui/:username', async (req, res) => {
@@ -58,91 +54,39 @@ app.get('/join-ui/:username', async (req, res) => {
   res.render('join-ui', { username });
 });
 
+// posts
+// posts
 app.post('/create-room', async (req, res) => {
-  const { username } = req.body;
-
-  // Generate a valid UUID for room_creator_id
-  const roomCreatorId = uuidv4();
-
-  // Create a row for the room with essential information
-  const roomData = {
-    room_url: `http://localhost:3000/join-room?username=${username}&url=${username}`,
-    room_creator_username: username,
-    room_creator_id: roomCreatorId,
-    joiners: JSON.stringify({}), // Empty for now, will be updated when joiners join
-  };
-
-  // Store the room data in the Supabase table
-  const { data: createdRoom, error } = await supabase
-    .from('rooms')
-    .upsert([roomData], { returning: ['*'] });
-
-  if (error) {
-    console.error(error);
-    res.status(500).send('Error creating room');
-    return;
-  }
-
-  // Redirect to admin UI with the generated URL
-  res.redirect(`/admin-ui/${username}`);
-});
-
-
-
-
-
+    const { username } = req.body;
   
-
-
+    // Check if the table exists, if not, create it
+    await createTableIfNotExists(username);
+  
+    // Generate the URL for the created room
+    const roomUrl = `http://localhost:3000/join-room?username=${username}&url=${username}`;
+  
+    // Print the URL to the server-side CLI
+    console.log(`Room URL: ${roomUrl}`);
+  
+    // Redirect to admin UI
+    res.redirect(`/admin-ui/${username}`);
+  });
+  
 
 app.post('/join-room', async (req, res) => {
   const { username, url } = req.body;
 
-  try {
-    // Get the existing room data using the room_url
-    const { data: roomData, error: roomError } = await supabase
-      .from('rooms')
-      .select()
-      .eq('room_url', url)
-      .single();
-
-    if (roomError) {
-      throw new Error(`Error fetching room data: ${roomError.message}`);
-    }
-
-    // Parse the joiners column data
-    const joinersData = JSON.parse(roomData.joiners);
-
-    // Add a dummy joiner to the joinersData
-    const dummyJoinerKey = `dummy_${new Date().getTime()}`;
-    joinersData[dummyJoinerKey] = {
-      joined_at: new Date().toISOString(),
-      messages: [`${username} joined the room.`], // Add a message for the dummy joiner
-    };
-
-    // Update the joiners column in the Supabase table using the room_url
-    const { data: updatedRoom, updateError } = await supabase
-      .from('rooms')
-      .update({ joiners: JSON.stringify(joinersData) }) // Update the joiners column
-      .eq('room_url', url)
-      .single();
-
-    if (updateError) {
-      throw new Error(`Error updating room data: ${updateError.message}`);
-    }
-
-    // Redirect to join UI
-    res.redirect(`/join-ui/${username}`);
-  } catch (error) {
-    console.error(error);
-    res.status(500).send(`Error: ${error.message}`);
+  // Check if the table exists, if not, redirect to an error page or handle accordingly
+  const tableExists = await checkTableExists(url);
+  if (!tableExists) {
+    // Redirect to an error page or handle accordingly
+    res.redirect('/');
+    return;
   }
+
+  // Redirect to join UI
+  res.redirect(`/join-ui/${username}`);
 });
-
-
-
-
-
 
 // Your Socket.IO logic and other routes...
 
@@ -171,6 +115,7 @@ async function checkTableExists(table_name) {
 
 
 
+// Add these lines in index.js
 const rooms = {}; // To store room data and socket connections
 
 io.on('connection', (socket) => {
@@ -181,7 +126,11 @@ io.on('connection', (socket) => {
     const { room, username } = data;
     socket.join(room);
 
-    // Store room data (removed table creation logic)
+    // Store room data
+    if (!rooms[room]) {
+      rooms[room] = [];
+    }
+    rooms[room].push(username);
 
     // Broadcast to all clients in the room
     io.to(room).emit('message', `${username} has joined the room`);
@@ -195,46 +144,28 @@ io.on('connection', (socket) => {
     io.to(room).emit('message', `${username}: ${message}`);
   });
 
-  // Handle disconnect (removed unnecessary table handling)
-});
+  // Handle disconnect
+  socket.on('disconnect', () => {
+    console.log('A user disconnected');
 
-
-app.post('/send-join-message', async (req, res) => {
-  const { username, joinMessage } = req.body;
-
-  // Store the join message in the Superbase table
-  const { data, error } = await supabase
-    .from(username)
-    .upsert([{ username, message: joinMessage }], { returning: ['*'] });
-
-  if (error) {
-    console.error(error);
-    res.status(500).send('Error storing join message');
-    return;
-  }
-
-  // Broadcast the join message to all clients in the room
-  io.to(username).emit('join-message', `${username}: ${joinMessage}`);
-
-  res.redirect(`/join-ui/${username}`);
+    // Remove user from rooms data
+    for (const room in rooms) {
+      const index = rooms[room].indexOf(socket.username);
+      if (index !== -1) {
+        rooms[room].splice(index, 1);
+        io.to(room).emit('message', `${socket.username} has left the room`);
+      }
+    }
+  });
 });
 
 app.post('/send-message', async (req, res) => {
   const { username, message } = req.body;
 
-  // Store the message in the Superbase table
-  const { data, error } = await supabase
-    .from(username)
-    .upsert([{ username, message }], { returning: ['*'] });
-
-  if (error) {
-    console.error(error);
-    res.status(500).send('Error storing message');
-    return;
-  }
-
   // Broadcast the message to all clients in the room
-  io.to(username).emit('message', `${username}: ${message}`);
+  io.to(username).emit('message', message);
+
+  // You can also store the message in the Superbase table here
 
   res.redirect(`/admin-ui/${username}`);
 });
@@ -242,4 +173,3 @@ app.post('/send-message', async (req, res) => {
 server.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
 });
-
