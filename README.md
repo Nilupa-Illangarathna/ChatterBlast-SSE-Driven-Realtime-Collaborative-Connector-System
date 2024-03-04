@@ -1,6 +1,4 @@
 
-# Create the Markdown file
-cat <<EOF > ChatterBlast.md
 # ChatterBlast: Dynamic-SSE-Driven-Realtime-Collaborative-Connector-System
 
 ChatterBlast is a robust real-time collaborative system built on Node.js, Express, Supabase, and EJS. It leverages the power of Server-Sent Events (SSE) to provide dynamic, live interactions within a collaborative environment.
