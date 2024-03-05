@@ -2,13 +2,47 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Join UI</title>
+  <!-- ... (head section remains unchanged) ... -->
 </head>
 <body>
   <h1>Welcome <%= username %> to the Join UI</h1>
-  <!-- Your join UI content here -->
+  
+  <!-- Display User Details -->
+  <h2>User Details:</h2>
+  <p>Username: <%= username %></p>
+
+  <!-- Display User Messages -->
+  <h2>User Messages:</h2>
+  <ul>
+    <% userMessages.forEach((message) => { %>
+      <li><%= message %></li>
+    <% }); %>
+  </ul>
+
+  <!-- Messaging Form -->
+  <form action="/send-join-message" method="POST">
+    <label for="joinMessage">Enter Message:</label>
+    <input type="text" id="joinMessage" name="joinMessage" required>
+    <button type="submit">Send</button>
+  </form>
+
+  <!-- Display Join Messages -->
+  <ul id="joinMessages">
+    <% userMessages.forEach((message) => { %>
+      <li><%= message %></li>
+    <% }); %>
+  </ul>
+
+  <script>
+    // Use Socket.IO to listen for real-time messages
+    const socket = io();
+
+    socket.on('join-message', (msg) => {
+      const joinMessagesList = document.getElementById('joinMessages');
+      const li = document.createElement('li');
+      li.textContent = msg;
+      joinMessagesList.appendChild(li);
+    });
+  </script>
 </body>
 </html>
