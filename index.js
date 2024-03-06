@@ -4,10 +4,15 @@ const { createServer } = require('http');
 const { Server } = require('socket.io');
 const { createClient } = require('@supabase/supabase-js');
 const { v4: uuidv4 } = require('uuid');
+const bodyParser = require('body-parser');
+
 
 const app = express();
 const server = createServer(app);
 const io = new Server(server);
+
+app.use(bodyParser.urlencoded({ extended: true })); // Use body-parser middleware
+app.use(bodyParser.json()); // Parse JSON bodies
 
 const supabaseUrl = 'https://zqjmkicfcolipzkqvslv.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpxam1raWNmY29saXB6a3F2c2x2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDg4NjA2MDYsImV4cCI6MjAyNDQzNjYwNn0.okYMPvmrR8ftOXIyHYIJ2DQ-Tk2ZfVZhHXMM6cBmaVk';
@@ -108,7 +113,7 @@ app.post('/create-room', async (req, res) => {
 
 
 
-  
+
 
 
 
@@ -136,7 +141,7 @@ app.post('/join-room', async (req, res) => {
       const userMessages = joinersData[username].messages;
 
       // Render the join-ui.ejs with existing user data
-      res.render('join-ui', { username, userMessages });
+      res.render('join-ui', { username, userMessages, roomData });
     } else {
       // If the username doesn't exist, create a new entry
       // Create a unique key for the new joiner
@@ -145,7 +150,7 @@ app.post('/join-room', async (req, res) => {
       // Add the new joiner to the joinersData with an empty array for messages
       joinersData[joinerKey] = {
         joined_at: new Date().toISOString(),
-        messages: ["Hello"],
+        messages: [],
       };
 
       // Update the joiners column in the Supabase table using the room_url
@@ -160,7 +165,7 @@ app.post('/join-room', async (req, res) => {
       }
 
       // Render the join-ui.ejs with new user data
-      res.render('join-ui', { username, userMessages: [] });
+      res.render('join-ui', { username, userMessages: [], roomData });
     }
   } catch (error) {
     console.error(error);
@@ -175,18 +180,87 @@ app.post('/join-room', async (req, res) => {
 
 
 
+// Modify the /send-join-message route
+app.post('/send-join-message', async (req, res) => {
+  try {
+    const { username, joinMessage, roomData } = req.body;
+
+    // Parse the roomData JSON string back to an object
+    const parsedRoomData = JSON.parse(roomData);
+
+    // Retrieve the existing room data using the room_url
+    const { data: roomDataFromSupabase, error: roomError } = await supabase
+      .from('rooms')
+      .select()
+      .eq('room_url', parsedRoomData.room_url)
+      .single();
+
+    if (roomError) {
+      throw new Error(`Error fetching room data from Supabase: ${roomError.message}`);
+    }
+
+    // Parse the joiners column data
+    const joinersData = JSON.parse(roomDataFromSupabase.joiners);
+
+    // Check if the username already exists in joinersData
+    if (joinersData.hasOwnProperty(username)) {
+      // Update the messages array for the specific user
+      joinersData[username].messages.push(joinMessage);
+
+      // Update the joiners column in the Supabase table using the room_url
+      const { data: updatedRoom, updateError } = await supabase
+        .from('rooms')
+        .update({ joiners: JSON.stringify(joinersData) }) // Update the joiners column
+        .eq('room_url', parsedRoomData.room_url)
+        .single();
+
+      if (updateError) {
+        throw new Error(`Error updating room data in Supabase: ${updateError.message}`);
+      }
+
+      // Create the data structure for joiners' messaging states
+      const joinersMessagingStates = Object.keys(joinersData).map((joinerName, index) => {
+        const messages = joinersData[joinerName].messages;
+        return {
+          joinerName,
+          joinerId: index + 1, // Assuming a unique identifier for each joiner
+          voted: messages.length > 0, // If the user has sent at least one message
+          votedValue: messages.length > 0 ? messages[messages.length - 1] : '',
+        };
+      });
+
+      // Print the entire data structure on the server side CLI
+      console.log('Row:', roomDataFromSupabase);
+      console.log('Latest Messages:', joinersMessagingStates);
+
+      // Broadcast the message to all clients in the room
+      io.to(parsedRoomData.room_creator_username).emit('join-message', `${username}: ${joinMessage}`);
+
+      // Render the join-ui.ejs with updated user data
+      res.render('join-ui', { username, userMessages: joinersData[username].messages, roomData: parsedRoomData });
+    } else {
+      throw new Error(`User ${username} not found in joinersData`);
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error processing message');
+  }
+});
+
+
+
 
 
 // Your Socket.IO logic and other routes...
 
 async function createTableIfNotExists(table_name) {
-    // Create the query to create a new table with a predefined schema
-    const query = `CREATE TABLE IF NOT EXISTS ${table_name} (id SERIAL PRIMARY KEY, username TEXT NOT NULL, message TEXT NOT NULL)`;
-  
-    // Execute the query
-    await supabase.rpc('create_new_table', { table_name: table_name });
-  }
-  
+  // Create the query to create a new table with a predefined schema
+  const query = `CREATE TABLE IF NOT EXISTS ${table_name} (id SERIAL PRIMARY KEY, username TEXT NOT NULL, message TEXT NOT NULL)`;
+
+  // Execute the query
+  await supabase.rpc('create_new_table', { table_name: table_name });
+}
+
 
 async function checkTableExists(table_name) {
   // Check if the table exists
@@ -232,48 +306,7 @@ io.on('connection', (socket) => {
 });
 
 
-// Add this route at the end of your existing routes
-app.post('/send-join-message', async (req, res) => {
-  const { username, joinMessage } = req.body;
 
-  try {
-    // Get the existing room data using the username
-    const { data: roomData, error: roomError } = await supabase
-      .from('rooms')
-      .select()
-      .eq('room_creator_username', username)
-      .single();
-
-    if (roomError) {
-      throw new Error(`Error fetching room data: ${roomError.message}`);
-    }
-
-    // Parse the joiners column data
-    const joinersData = JSON.parse(roomData.joiners);
-
-    // Add the new message to the joiner's messages array
-    joinersData[username].messages.push(`${username}: ${joinMessage}`);
-
-    // Update the joiners column in the Supabase table using the room_creator_username
-    const { data: updatedRoom, updateError } = await supabase
-      .from('rooms')
-      .update({ joiners: JSON.stringify(joinersData) }) // Update the joiners column
-      .eq('room_creator_username', username)
-      .single();
-
-    if (updateError) {
-      throw new Error(`Error updating room data: ${updateError.message}`);
-    }
-
-    // Broadcast the join message to all clients in the room
-    io.to(username).emit('join-message', `${username}: ${joinMessage}`);
-
-    res.redirect(`/join-ui/${username}`);
-  } catch (error) {
-    console.error(error);
-    res.status(500).send(`Error: ${error.message}`);
-  }
-});
 
 
 app.post('/send-message', async (req, res) => {
