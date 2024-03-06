@@ -37,7 +37,7 @@
   </ul>
 
   <!-- Messaging Form -->
-  <form action="/send-join-message" method="POST">
+  <form id="joinForm" action="/send-join-message" method="POST">
     <!-- Hidden input fields to include room data and username -->
     <input type="hidden" name="roomData" value='<%= JSON.stringify(roomData) %>'>
     <input type="hidden" name="username" value='<%= username %>'>
@@ -55,6 +55,42 @@
       </li>
       <% }); %>
   </ul>
+  <script>
+    // Use JavaScript to handle form submission asynchronously
+    document.addEventListener('DOMContentLoaded', () => {
+      const joinForm = document.getElementById('joinForm');
+
+      joinForm.addEventListener('submit', async (event) => {
+        event.preventDefault(); // Prevent the default form submission behavior
+
+        const formData = new FormData(joinForm);
+        const joinMessage = formData.get('joinMessage');
+        const roomData = formData.get('roomData');
+        const username = formData.get('username');
+
+        try {
+          const response = await fetch('/send-join-message', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ username, joinMessage, roomData }),
+          });
+
+          if (!response.ok) {
+            throw new Error(`Error sending join message: ${response.statusText}`);
+          }
+
+          console.log('Join message sent successfully.');
+
+          // You can perform additional actions based on the response if needed
+
+        } catch (error) {
+          console.error(`Error sending join message: ${error.message}`);
+        }
+      });
+    });
+  </script>
   <script>
     // Use Socket.IO to listen for real-time messages
     const socket = io();
