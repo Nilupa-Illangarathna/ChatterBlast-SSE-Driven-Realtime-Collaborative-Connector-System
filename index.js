@@ -1,12 +1,15 @@
 // index.js
 const express = require('express');
 const { createServer } = require('http');
+const { Server } = require('socket.io');
 const { createClient } = require('@supabase/supabase-js');
 const { v4: uuidv4 } = require('uuid');
 const bodyParser = require('body-parser');
 
+
 const app = express();
 const server = createServer(app);
+const io = new Server(server);
 
 app.use(bodyParser.urlencoded({ extended: true })); // Use body-parser middleware
 app.use(bodyParser.json()); // Parse JSON bodies
@@ -69,12 +72,13 @@ app.get('/join-ui/:username', async (req, res) => {
       throw new Error(`Error fetching room data: ${roomError.message}`);
     }
 
-    res.render('join-ui', { username, userMessages: [], roomData });
+    res.render('join-ui', { username, roomData });
   } catch (error) {
     console.error(error);
     res.status(500).send(`Error: ${error.message}`);
   }
 });
+
 
 app.post('/create-room', async (req, res) => {
   const { username } = req.body;
@@ -104,6 +108,14 @@ app.post('/create-room', async (req, res) => {
   // Redirect to admin UI with the generated URL
   res.redirect(`/admin-ui/${username}`);
 });
+
+
+
+
+
+
+
+
 
 app.post('/join-room', async (req, res) => {
   const { username, url } = req.body;
@@ -161,6 +173,14 @@ app.post('/join-room', async (req, res) => {
   }
 });
 
+
+
+
+
+
+
+
+// Modify the /send-join-message route
 app.post('/send-join-message', async (req, res) => {
   try {
     const { username, joinMessage, roomData } = req.body;
@@ -198,6 +218,9 @@ app.post('/send-join-message', async (req, res) => {
         throw new Error(`Error updating room data in Supabase: ${updateError.message}`);
       }
 
+      // Broadcast the message to all clients in the room
+      io.to(parsedRoomData.room_creator_username).emit('join-message', `${username}: ${joinMessage}`);
+
       // Render the join-ui.ejs with updated user data
       res.render('join-ui', { username, userMessages: joinersData[username].messages, roomData: parsedRoomData });
     } else {
@@ -209,6 +232,11 @@ app.post('/send-join-message', async (req, res) => {
   }
 });
 
+
+
+
+// Your Socket.IO logic and other routes...
+
 async function createTableIfNotExists(table_name) {
   // Create the query to create a new table with a predefined schema
   const query = `CREATE TABLE IF NOT EXISTS ${table_name} (id SERIAL PRIMARY KEY, username TEXT NOT NULL, message TEXT NOT NULL)`;
@@ -216,6 +244,7 @@ async function createTableIfNotExists(table_name) {
   // Execute the query
   await supabase.rpc('create_new_table', { table_name: table_name });
 }
+
 
 async function checkTableExists(table_name) {
   // Check if the table exists
@@ -227,6 +256,42 @@ async function checkTableExists(table_name) {
 
   return data !== null;
 }
+
+
+
+
+
+
+const rooms = {}; // To store room data and socket connections
+
+io.on('connection', (socket) => {
+  console.log('A user connected');
+
+  // Handle joining room
+  socket.on('join-room', (data) => {
+    const { room, username } = data;
+    socket.join(room);
+
+    // Store room data (removed table creation logic)
+
+    // Broadcast to all clients in the room
+    io.to(room).emit('message', `${username} has joined the room`);
+  });
+
+  // Handle sending messages
+  socket.on('send-message', (data) => {
+    const { room, username, message } = data;
+
+    // Broadcast to all clients in the room
+    io.to(room).emit('message', `${username}: ${message}`);
+  });
+
+  // Handle disconnect (removed unnecessary table handling)
+});
+
+
+
+
 
 app.post('/send-message', async (req, res) => {
   const { username, message } = req.body;
@@ -241,6 +306,9 @@ app.post('/send-message', async (req, res) => {
     res.status(500).send('Error storing message');
     return;
   }
+
+  // Broadcast the message to all clients in the room
+  io.to(username).emit('message', `${username}: ${message}`);
 
   res.redirect(`/admin-ui/${username}`);
 });
