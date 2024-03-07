@@ -18,7 +18,7 @@
   <button onclick="copyToClipboard('<%= roomUrl %>')">Copy URL</button>
 
   <!-- Messaging Form -->
-  <form action="/send-message" method="POST">
+  <form id="adminForm" action="/send-message" method="POST">
     <label for="message">Send Message:</label>
     <input type="text" id="message" name="message" required>
     <button type="submit">Send</button>
@@ -28,16 +28,37 @@
   <ul id="messages"></ul>
 
   <script>
-    // Use Socket.IO to listen for real-time messages
-    const socket = io();
+    // Use JavaScript to handle form submission asynchronously
+    document.addEventListener('DOMContentLoaded', () => {
+      const adminForm = document.getElementById('adminForm');
 
+      adminForm.addEventListener('submit', async (event) => {
+        event.preventDefault(); // Prevent the default form submission behavior
 
+        const formData = new FormData(adminForm);
+        const message = formData.get('message');
 
-    socket.on('message', (msg) => {
-      const messagesList = document.getElementById('messages');
-      const li = document.createElement('li');
-      li.textContent = msg;
-      messagesList.appendChild(li);
+        try {
+          const response = await fetch('/send-message', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ username: '<%= username %>', message }),
+          });
+
+          if (!response.ok) {
+            throw new Error(`Error sending message: ${response.statusText}`);
+          }
+
+          console.log('Message sent successfully.');
+
+          // You can perform additional actions based on the response if needed
+
+        } catch (error) {
+          console.error(`Error sending message: ${error.message}`);
+        }
+      });
     });
 
     // Function to copy URL to clipboard
@@ -48,7 +69,7 @@
       el.select();
       document.execCommand('copy');
       document.body.removeChild(el);
-      alert('URL copied to clipboard!');
+      // alert('URL copied to clipboard!');
     }
   </script>
 </body>
