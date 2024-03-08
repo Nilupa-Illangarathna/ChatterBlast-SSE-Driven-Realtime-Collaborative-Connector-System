@@ -90,28 +90,41 @@
         }
       });
     });
-  </script>
-  <script>
-    // Use Socket.IO to listen for real-time messages
-    const socket = io();
-
-    socket.on('join-message', (msg) => {
-      const joinMessagesList = document.getElementById('joinMessages');
-      const li = document.createElement('li');
-      li.textContent = msg;
-      joinMessagesList.appendChild(li);
-    });
-  </script>
-  <script>
-    // Print room information on the web console
-    console.log('Username:', '<%= username %>');
-    console.log('Room URL:', '<%= roomData.room_url %>');
-    console.log('Room Owner:', '<%= roomData.room_creator_username %>');
 
     // Display room information on the page
     document.getElementById('roomUrl').textContent = '<%= roomData.room_url %>';
     document.getElementById('roomOwner').textContent = '<%= roomData.room_creator_username %>';
   </script>
+  <script>
+  const eventSource = new EventSource('/sse');
+
+  eventSource.onmessage = (event) => {
+    const eventData = JSON.parse(event.data);
+    if (eventData.action === 'newJoiner') {
+      console.log(`New joiner: ${eventData.username}`);
+    }
+  };
+
+  eventSource.onerror = (error) => {
+    console.error('SSE Error:', error);
+    eventSource.close();
+  };
+</script>
+<script>
+  const eventSource = new EventSource('/sse');
+
+  eventSource.onmessage = (event) => {
+    const eventData = JSON.parse(event.data);
+    if (eventData.action === 'newJoiner') {
+      console.log(`New joiner: ${eventData.username}`);
+    }
+  };
+
+  eventSource.onerror = (error) => {
+    console.error('SSE Error:', error);
+    eventSource.close();
+  };
+</script>
 </body>
 
 </html>

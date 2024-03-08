@@ -61,16 +61,6 @@
       });
     });
 
-    // Use Socket.IO to listen for real-time messages
-    const socket = io();
-
-    socket.on('message', (msg) => {
-      const messagesList = document.getElementById('messages');
-      const li = document.createElement('li');
-      li.textContent = msg;
-      messagesList.appendChild(li);
-    });
-
     // Function to copy URL to clipboard
     function copyToClipboard(url) {
       const el = document.createElement('textarea');
@@ -81,6 +71,21 @@
       document.body.removeChild(el);
       // alert('URL copied to clipboard!');
     }
+  </script>
+  <script>
+    const eventSource = new EventSource('/sse');
+  
+    eventSource.onmessage = (event) => {
+      const eventData = JSON.parse(event.data);
+      if (eventData.action === 'newJoiner') {
+        console.log(`New joiner: ${eventData.username}`);
+      }
+    };
+  
+    eventSource.onerror = (error) => {
+      console.error('SSE Error:', error);
+      eventSource.close();
+    };
   </script>
 </body>
 </html>
