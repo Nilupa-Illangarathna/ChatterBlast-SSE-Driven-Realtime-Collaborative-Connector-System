@@ -3,13 +3,13 @@ const express = require('express');
 const { createServer } = require('http');
 const { createClient } = require('@supabase/supabase-js');
 const { v4: uuidv4 } = require('uuid');
+<<<<<<< HEAD
 const bodyParser = require('body-parser');
+=======
+>>>>>>> be8045a07dff6473cbfe7d19632ae00073156aea
 
 const app = express();
 const server = createServer(app);
-
-app.use(bodyParser.urlencoded({ extended: true })); // Use body-parser middleware
-app.use(bodyParser.json()); // Parse JSON bodies
 
 const supabaseUrl = 'https://zqjmkicfcolipzkqvslv.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpxam1raWNmY29saXB6a3F2c2x2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDg4NjA2MDYsImV4cCI6MjAyNDQzNjYwNn0.okYMPvmrR8ftOXIyHYIJ2DQ-Tk2ZfVZhHXMM6cBmaVk';
@@ -136,6 +136,17 @@ app.post('/create-room', async (req, res) => {
   res.redirect(`/admin-ui/${username}`);
 });
 
+<<<<<<< HEAD
+=======
+
+
+
+
+  
+
+
+
+>>>>>>> be8045a07dff6473cbfe7d19632ae00073156aea
 app.post('/join-room', async (req, res) => {
   const { username, url } = req.body;
 
@@ -174,7 +185,7 @@ app.post('/join-room', async (req, res) => {
       // Add the new joiner to the joinersData with an empty array for messages
       joinersData[joinerKey] = {
         joined_at: new Date().toISOString(),
-        messages: [],
+        messages: ["Hello"],
       };
 
       // Update the joiners column in the Supabase table using the room_url
@@ -202,6 +213,7 @@ app.post('/join-room', async (req, res) => {
   }
 });
 
+<<<<<<< HEAD
 app.post('/send-join-message', async (req, res) => {
   try {
     const { username, joinMessage, roomData } = req.body;
@@ -257,6 +269,28 @@ async function createTableIfNotExists(table_name) {
   // Execute the query
   await supabase.rpc('create_new_table', { table_name: table_name });
 }
+=======
+
+
+
+
+
+
+
+
+
+
+// Your Socket.IO logic and other routes...
+
+async function createTableIfNotExists(table_name) {
+    // Create the query to create a new table with a predefined schema
+    const query = `CREATE TABLE IF NOT EXISTS ${table_name} (id SERIAL PRIMARY KEY, username TEXT NOT NULL, message TEXT NOT NULL)`;
+  
+    // Execute the query
+    await supabase.rpc('create_new_table', { table_name: table_name });
+  }
+  
+>>>>>>> be8045a07dff6473cbfe7d19632ae00073156aea
 
 async function checkTableExists(table_name) {
   // Check if the table exists
