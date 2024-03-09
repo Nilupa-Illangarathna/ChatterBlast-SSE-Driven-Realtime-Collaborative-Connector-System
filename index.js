@@ -167,9 +167,13 @@ app.post('/join-room', async (req, res) => {
       res.render('join-ui', { username, userMessages, roomData });
 
       // Notify all clients about the new joiner
+      // Notify all clients about the new joiner with username and URL
+
+      console.log(url);
       sseClients.forEach(client => {
-        client.sseSend({ action: 'newJoiner', username });
+        client.sseSend({ action: 'newJoiner', username, url });
       });
+
     } else {
       // If the username doesn't exist, create a new entry
       // Create a unique key for the new joiner

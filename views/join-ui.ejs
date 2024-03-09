@@ -11,12 +11,17 @@
 
   <!-- Display User Details -->
   <h2>User Details:</h2>
-  <p>Username: <%= username %></p>
+  <p>Username: <%= username %>
+  </p>
   <!-- Display Room Data -->
-  <p>Room URL: <%= roomData.room_url %></p>
-  <p>Room Owne: <%= roomData.room_creator_username %></p>
-  <p>Joiners: <%= roomData.joiners %></p>
-  <p>Sequence: <%= roomData.sequence %></p>
+  <p>Room URL: <%= roomData.room_url %>
+  </p>
+  <p>Room Owne: <%= roomData.room_creator_username %>
+  </p>
+  <p>Joiners: <%= roomData.joiners %>
+  </p>
+  <p>Sequence: <%= roomData.sequence %>
+  </p>
 
   <!-- Display User Messages -->
   <h2>User Messages:</h2>
@@ -82,38 +87,35 @@
         }
       });
     });
-  
+
   </script>
   <script>
-  const eventSource = new EventSource('/sse');
-
-  eventSource.onmessage = (event) => {
-    const eventData = JSON.parse(event.data);
-    if (eventData.action === 'newJoiner') {
-      console.log(`New joiner: ${eventData.username}`);
+    function decodeHtmlEntities(html) {
+      var txt = document.createElement('textarea');
+      txt.innerHTML = html;
+      return txt.value;
     }
-  };
 
-  eventSource.onerror = (error) => {
-    console.error('SSE Error:', error);
-    eventSource.close();
-  };
-</script>
-<script>
-  const eventSource = new EventSource('/sse');
+    const eventSource = new EventSource('/sse');
 
-  eventSource.onmessage = (event) => {
-    const eventData = JSON.parse(event.data);
-    if (eventData.action === 'newJoiner') {
-      console.log(`New joiner: ${eventData.username}`);
-    }
-  };
+    eventSource.onmessage = (event) => {
+      const eventData = JSON.parse(event.data);
+      if (eventData.action === 'newJoiner') {
+        console.log(`New joiner option`);
+        // Check if the URLs match before printing to the console
+        if (eventData.url === decodeHtmlEntities('<%= roomData.room_url %>')) {
+          console.log(`New joiner: ${eventData.username}`);
+        } else {
+          console.log(`Not equal: ${eventData.url} and <%= roomData.room_url %>`);
+        }
+      }
+    };
 
-  eventSource.onerror = (error) => {
-    console.error('SSE Error:', error);
-    eventSource.close();
-  };
-</script>
+    eventSource.onerror = (error) => {
+      console.error('SSE Error:', error);
+      eventSource.close();
+    };
+  </script>
 </body>
 
 </html>
