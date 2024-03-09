@@ -14,11 +14,16 @@
   <p>This is Admin's room</p>
   <p>Admin: <%= username %></p>
   
+  <p>Room URL: <%= roomData.room_url %></p>
+  <p>Room Creator: <%= roomData.room_creator_username %></p>
+  <p>Joiners: <%= roomData.joiners %></p>
+  <p>Sequence: <%= roomData.sequence %></p>
+
   <!-- Copy URL Button -->
-  <button onclick="copyToClipboard('<%= roomUrl %>')">Copy URL</button>
+  <button onclick="copyToClipboard('<%= roomData.room_url %>')">Copy URL</button>
 
   <!-- Messaging Form -->
-  <form action="/send-message" method="POST">
+  <form id="adminForm" action="/send-message" method="POST">
     <label for="message">Send Message:</label>
     <input type="text" id="message" name="message" required>
     <button type="submit">Send</button>
@@ -28,7 +33,6 @@
   <ul id="messages"></ul>
 
   <script>
-<<<<<<< HEAD
     // Use JavaScript to handle form submission asynchronously
     document.addEventListener('DOMContentLoaded', () => {
       const adminForm = document.getElementById('adminForm');
@@ -60,18 +64,6 @@
           console.error(`Error sending message: ${error.message}`);
         }
       });
-=======
-    // Use Socket.IO to listen for real-time messages
-    const socket = io();
-
-
-
-    socket.on('message', (msg) => {
-      const messagesList = document.getElementById('messages');
-      const li = document.createElement('li');
-      li.textContent = msg;
-      messagesList.appendChild(li);
->>>>>>> be8045a07dff6473cbfe7d19632ae00073156aea
     });
 
     // Function to copy URL to clipboard
@@ -82,7 +74,7 @@
       el.select();
       document.execCommand('copy');
       document.body.removeChild(el);
-      alert('URL copied to clipboard!');
+      // alert('URL copied to clipboard!');
     }
   </script>
   <script>

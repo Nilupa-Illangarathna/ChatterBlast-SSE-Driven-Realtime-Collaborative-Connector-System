@@ -1,34 +1,39 @@
 <!-- views/join-ui.ejs -->
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <!-- ... (head section remains unchanged) ... -->
 </head>
+
 <body>
   <h1>Welcome <%= username %> to the Join UI</h1>
-  
+
   <!-- Display User Details -->
   <h2>User Details:</h2>
   <p>Username: <%= username %></p>
-  
-  <!-- Display Room Information -->
-  <h2>Room Information:</h2>
-  <label for="roomUrl">Room URL:</label>
-  <p id="roomUrl"><%= roomData.room_url %></p>
-
-  <label for="roomOwner">Room Owner:</label>
-  <p id="roomOwner"><%= roomData.room_creator_username %></p>
+  <!-- Display Room Data -->
+  <p>Room URL: <%= roomData.room_url %></p>
+  <p>Room Owne: <%= roomData.room_creator_username %></p>
+  <p>Joiners: <%= roomData.joiners %></p>
+  <p>Sequence: <%= roomData.sequence %></p>
 
   <!-- Display User Messages -->
   <h2>User Messages:</h2>
   <ul>
-    <% userMessages.forEach((message) => { %>
-      <li><%= message %></li>
-    <% }); %>
+    <% userMessages.forEach((message)=> { %>
+      <li>
+        <%= message %>
+      </li>
+      <% }); %>
   </ul>
 
   <!-- Messaging Form -->
-  <form action="/send-join-message" method="POST">
+  <form id="joinForm" action="/send-join-message" method="POST">
+    <!-- Hidden input fields to include room data and username -->
+    <input type="hidden" name="roomData" value='<%= JSON.stringify(roomData) %>'>
+    <input type="hidden" name="username" value='<%= username %>'>
+
     <label for="joinMessage">Enter Message:</label>
     <input type="text" id="joinMessage" name="joinMessage" required>
     <button type="submit">Send</button>
@@ -36,12 +41,13 @@
 
   <!-- Display Join Messages -->
   <ul id="joinMessages">
-    <% userMessages.forEach((message) => { %>
-      <li><%= message %></li>
-    <% }); %>
+    <% userMessages.forEach((message)=> { %>
+      <li>
+        <%= message %>
+      </li>
+      <% }); %>
   </ul>
   <script>
-<<<<<<< HEAD
     // Use JavaScript to handle form submission asynchronously
     document.addEventListener('DOMContentLoaded', () => {
       const joinForm = document.getElementById('joinForm');
@@ -76,27 +82,7 @@
         }
       });
     });
-=======
-    // Use Socket.IO to listen for real-time messages
-    const socket = io();
-
-    socket.on('join-message', (msg) => {
-      const joinMessagesList = document.getElementById('joinMessages');
-      const li = document.createElement('li');
-      li.textContent = msg;
-      joinMessagesList.appendChild(li);
-    });
-  </script>
-  <script>
-    // Print room information on the web console
-    console.log('Username:', '<%= username %>');
-    console.log('Room URL:', '<%= roomData.room_url %>');
-    console.log('Room Owner:', '<%= roomData.room_creator_username %>');
->>>>>>> be8045a07dff6473cbfe7d19632ae00073156aea
-
-    // Display room information on the page
-    document.getElementById('roomUrl').textContent = '<%= roomData.room_url %>';
-    document.getElementById('roomOwner').textContent = '<%= roomData.room_creator_username %>';
+  
   </script>
   <script>
   const eventSource = new EventSource('/sse');
@@ -129,4 +115,5 @@
   };
 </script>
 </body>
+
 </html>

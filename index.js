@@ -3,13 +3,13 @@ const express = require('express');
 const { createServer } = require('http');
 const { createClient } = require('@supabase/supabase-js');
 const { v4: uuidv4 } = require('uuid');
-<<<<<<< HEAD
 const bodyParser = require('body-parser');
-=======
->>>>>>> be8045a07dff6473cbfe7d19632ae00073156aea
 
 const app = express();
 const server = createServer(app);
+
+app.use(bodyParser.urlencoded({ extended: true })); // Use body-parser middleware
+app.use(bodyParser.json()); // Parse JSON bodies
 
 const supabaseUrl = 'https://zqjmkicfcolipzkqvslv.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpxam1raWNmY29saXB6a3F2c2x2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDg4NjA2MDYsImV4cCI6MjAyNDQzNjYwNn0.okYMPvmrR8ftOXIyHYIJ2DQ-Tk2ZfVZhHXMM6cBmaVk';
@@ -68,26 +68,6 @@ app.get('/join-room', (req, res) => {
 app.get('/admin-ui/:username', async (req, res) => {
   const { username } = req.params;
 
-  // Check if the table exists, if not, create it
-  await createTableIfNotExists(username);
-
-  // Generate the URL for the created room
-  const roomUrl = `http://localhost:3000/join-room?username=${username}&url=${username}`;
-
-  res.render('admin-ui', { username, roomUrl });
-});
-
-app.get('/join-ui/:username', async (req, res) => {
-  const { username } = req.params;
-
-  // Check if the table exists, if not, redirect to an error page or handle accordingly
-  const tableExists = await checkTableExists(username);
-  if (!tableExists) {
-    // Redirect to an error page or handle accordingly
-    res.redirect('/');
-    return;
-  }
-
   try {
     // Fetch the room data for the specified username
     const { data: roomData, error: roomError } = await supabase
@@ -100,7 +80,31 @@ app.get('/join-ui/:username', async (req, res) => {
       throw new Error(`Error fetching room data: ${roomError.message}`);
     }
 
-    res.render('join-ui', { username, userMessages: [], roomData });
+    // Render the admin-ui.ejs with the entire room row data
+    res.render('admin-ui', { username, roomData });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send(`Error: ${error.message}`);
+  }
+});
+
+app.get('/join-ui/:username', async (req, res) => {
+  const { username } = req.params;
+
+  try {
+    // Fetch the room data using the provided username
+    const { data: roomData, error: roomError } = await supabase
+      .from('rooms')
+      .select()
+      .eq('room_creator_username', username)
+      .single();
+
+    if (roomError) {
+      throw new Error(`Error fetching room data: ${roomError.message}`);
+    }
+
+    // Render the join-ui.ejs with the entire room row data
+    res.render('join-ui', { username, roomData });
   } catch (error) {
     console.error(error);
     res.status(500).send(`Error: ${error.message}`);
@@ -136,17 +140,6 @@ app.post('/create-room', async (req, res) => {
   res.redirect(`/admin-ui/${username}`);
 });
 
-<<<<<<< HEAD
-=======
-
-
-
-
-  
-
-
-
->>>>>>> be8045a07dff6473cbfe7d19632ae00073156aea
 app.post('/join-room', async (req, res) => {
   const { username, url } = req.body;
 
@@ -185,7 +178,7 @@ app.post('/join-room', async (req, res) => {
       // Add the new joiner to the joinersData with an empty array for messages
       joinersData[joinerKey] = {
         joined_at: new Date().toISOString(),
-        messages: ["Hello"],
+        messages: [],
       };
 
       // Update the joiners column in the Supabase table using the room_url
@@ -213,7 +206,6 @@ app.post('/join-room', async (req, res) => {
   }
 });
 
-<<<<<<< HEAD
 app.post('/send-join-message', async (req, res) => {
   try {
     const { username, joinMessage, roomData } = req.body;
@@ -269,28 +261,6 @@ async function createTableIfNotExists(table_name) {
   // Execute the query
   await supabase.rpc('create_new_table', { table_name: table_name });
 }
-=======
-
-
-
-
-
-
-
-
-
-
-// Your Socket.IO logic and other routes...
-
-async function createTableIfNotExists(table_name) {
-    // Create the query to create a new table with a predefined schema
-    const query = `CREATE TABLE IF NOT EXISTS ${table_name} (id SERIAL PRIMARY KEY, username TEXT NOT NULL, message TEXT NOT NULL)`;
-  
-    // Execute the query
-    await supabase.rpc('create_new_table', { table_name: table_name });
-  }
-  
->>>>>>> be8045a07dff6473cbfe7d19632ae00073156aea
 
 async function checkTableExists(table_name) {
   // Check if the table exists
