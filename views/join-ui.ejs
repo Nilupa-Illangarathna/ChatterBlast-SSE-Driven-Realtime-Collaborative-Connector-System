@@ -98,18 +98,36 @@
 
     const eventSource = new EventSource('/sse');
 
-    eventSource.onmessage = (event) => {
+    eventSource.onmessage = async (event) => {
       const eventData = JSON.parse(event.data);
       if (eventData.action === 'newJoiner') {
         console.log(`New joiner option`);
         // Check if the URLs match before printing to the console
         if (eventData.url === decodeHtmlEntities('<%= roomData.room_url %>')) {
           console.log(`New joiner: ${eventData.username}`);
+
+          // Retry fetching the updated roomData after a timeout if it's still undefined
+          if (!roomData) {
+            await new Promise(resolve => setTimeout(resolve, 4000)); // 4 seconds timeout
+            // Fetch the updated room data here
+            // roomData = ...
+            console.log('Retrying to fetch updated roomData after timeout...');
+
+            // If roomData is still undefined after the timeout, you can handle it accordingly
+            if (!roomData) {
+              console.log('Room data is still undefined after timeout.');
+              return;
+            }
+          }
+
+          // Now you can use the updated roomData
+          console.log('Using updated roomData:', roomData);
         } else {
           console.log(`Not equal: ${eventData.url} and <%= roomData.room_url %>`);
         }
       }
     };
+
 
     eventSource.onerror = (error) => {
       console.error('SSE Error:', error);
