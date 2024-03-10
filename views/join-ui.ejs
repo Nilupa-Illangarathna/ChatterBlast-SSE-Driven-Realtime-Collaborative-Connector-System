@@ -3,266 +3,90 @@
 <html lang="en">
 
 <head>
-  <title>Join UI</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet"
-    integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
-  <style>
-    body {
-      background-color: #928888b0;
-      display: flex;
-    }
-
-    .left-container {
-      width: 70%;
-      padding: 40px;
-    }
-
-    .right-container {
-      width: 30%;
-      padding: 40px;
-      background-color: #fff;
-      height: 100vh;
-    }
-
-    .tile-container {
-      display: flex;
-      flex-wrap: wrap;
-      margin: -20px;
-    }
-
-    .tile {
-      width: calc(30% - 20px);
-      height: 0;
-      padding-bottom: calc(30% - 20px);
-      border-radius: 6px;
-      margin: 20px;
-      display: inline-block;
-      text-align: center;
-      line-height: 60px;
-      cursor: pointer;
-      transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-      background: #FFF;
-      color: #FFA000;
-      border: 1px solid #FFF;
-      box-shadow: 0 2px 6px 0 rgba(0, 0, 0, 0.26);
-      font-size: 1.5em;
-      padding: 24px;
-    }
-
-    .tile:not(.clickable) {
-      cursor: not-allowed;
-    }
-
-    .tile:hover {
-      transform: scale(1.05);
-      box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.26);
-    }
-
-    .tile:active {
-      transform: scale(0.95);
-      box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.26);
-    }
-
-    .input-container {
-      width: 400px;
-      margin-top: 30px;
-      margin-bottom: 60px;
-      display: flex;
-      align-items: center;
-    }
-
-    .input-container input {
-      margin-right: 10px;
-    }
-    
-    .small-tile {
-      width: calc(10% - 20px);
-      height: 0;
-      padding-bottom: calc(10% - 20px);
-      line-height: 30px;
-      font-size: 1em;
-      margin: 12px;
-    }
-
-    .right-container button,
-    .right-container .leaderboard,
-    .right-container .calculate-button,
-    .right-container .random-number,
-    .right-container .copy-link-button {
-      margin-bottom: 20px;
-      font-size: 1.2em;
-    }
-
-    .leaderboard {
-      list-style-type: none;
-      padding: 0;
-      display: none;
-    }
-
-    .leaderboard th,
-    .leaderboard td {
-      text-align: center;
-      padding: 10px;
-    }
-
-    .leaderboard tr:nth-child(even) {
-      background-color: #f2f2f2;
-    }
-
-    .leaderboard-container {
-      max-height: 500px;
-      overflow-y: auto;
-    }
-
-    .random-number {
-      font-size: 2em;
-      color: #4285F4;
-    }
-
-    .voted-value-column {
-      display: none;
-    }
-
-    form {
-      display: none;
-    }
-  </style>
+  <!-- ... (head section remains unchanged) ... -->
 </head>
 
 <body>
-  <div class="left-container">
-    <h2>Welcome <%= username %>
-    </h2>
-    <h1>Joiner Interface</h1>
+  <h1>Welcome <%= username %> to the Join UI</h1>
 
-    <div id="tileContainer" class="tile-container"></div>
-  </div>
+  <!-- Display User Details -->
+  <h2>User Details:</h2>
+  <p>Username: <%= username %>
+  </p>
+  <!-- Display Room Data -->
+  <p>Room URL: <%= roomData.room_url %>
+  </p>
+  <p>Room Owne: <%= roomData.room_creator_username %>
+  </p>
+  <p>Joiners: <%= roomData.joiners %>
+  </p>
+  <p>Sequence: <%= roomData.sequence %>
+  </p>
 
-  <div class="right-container">
-    <div class="leaderboard-container">
-      <table class="leaderboard table table-striped" id="leaderboard">
-        <thead>
-          <tr>
-            <th>Joiner Name</th>
-            <th>Voted</th>
-            <th class="voted-value-column">Voted Value</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
-    <div class="random-number" id="randomNumber"></div>
-  </div>
+  <!-- Display User Messages -->
+  <h2>User Messages:</h2>
+  <ul>
+    <% userMessages.forEach((message)=> { %>
+      <li>
+        <%= message %>
+      </li>
+      <% }); %>
+  </ul>
 
-
-
-  <form id="joinForm" action="/send-join-message" method="POST" className="hiddenOne">
+  <!-- Messaging Form -->
+  <form id="joinForm" action="/send-join-message" method="POST">
+    <!-- Hidden input fields to include room data and username -->
     <input type="hidden" name="roomData" value='<%= JSON.stringify(roomData) %>'>
     <input type="hidden" name="username" value='<%= username %>'>
 
-    <label type="hidden" for="joinMessage">Enter Message:</label>
-    <input type="hidden" type="text" id="joinMessage" name="joinMessage" required>
-    <button type="hidden" type="submit">Send</button>
+    <label for="joinMessage">Enter Message:</label>
+    <input type="text" id="joinMessage" name="joinMessage" required>
+    <button type="submit">Send</button>
   </form>
 
-
+  <!-- Display Join Messages -->
+  <ul id="joinMessages">
+    <% userMessages.forEach((message)=> { %>
+      <li>
+        <%= message %>
+      </li>
+      <% }); %>
+  </ul>
   <script>
-    let joinedPeople = [
-      { joinerName: 'John', joinerId: '1', voted: true, votedValue: '5' },
-      { joinerName: 'Alice', joinerId: '2', voted: true, votedValue: '6' },
-      { joinerName: 'Bob', joinerId: '3', voted: true, votedValue: '' },
-      { joinerName: 'Eva', joinerId: '4', voted: true, votedValue: '' },
-      { joinerName: 'Mike', joinerId: '5', voted: true, votedValue: '4' },
-      { joinerName: 'Sophie', joinerId: '6', voted: true, votedValue: '3' },
-    ];
+    // Use JavaScript to handle form submission asynchronously
+    document.addEventListener('DOMContentLoaded', () => {
+      const joinForm = document.getElementById('joinForm');
 
-    function generateTilesFromSequence(sequence) {
-      const tileContainer = document.getElementById('tileContainer');
-      tileContainer.innerHTML = '';
+      joinForm.addEventListener('submit', async (event) => {
+        event.preventDefault(); // Prevent the default form submission behavior
 
-      const formattedString = sequence.replace(/\s*,\s*/g, ',');
+        const formData = new FormData(joinForm);
+        const joinMessage = formData.get('joinMessage');
+        const roomData = formData.get('roomData');
+        const username = formData.get('username');
 
-      const resultArray2 = formattedString.split(',');
+        try {
+          const response = await fetch('/send-join-message', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ username, joinMessage, roomData }),
+          });
 
-      const finalArray2 = resultArray2.slice(0, -2);
+          if (!response.ok) {
+            throw new Error(`Error sending join message: ${response.statusText}`);
+          }
 
-      finalArray2.forEach((value) => {
-        const tile = document.createElement('div');
-        tile.classList.add('tile', 'small-tile', 'clickable');
-        tile.innerText = value.trim();
-        tile.addEventListener('click', () => handleTileClick(value.trim()));
-        tileContainer.appendChild(tile);
-      });
-    }
+          console.log('Join message sent successfully.');
 
-    function populatePage() {
-      const sequenceData = '<%= roomData.sequence %>';
-      generateTilesFromSequence(sequenceData);
+          // You can perform additional actions based on the response if needed
 
-      populateLeaderboard();
-      displayRandomNumber();
-    }
-
-    function populateLeaderboard() {
-      const leaderboard = document.getElementById('leaderboard');
-      const leaderboardBody = leaderboard.querySelector('tbody');
-
-      leaderboardBody.innerHTML = '';
-
-      joinedPeople.forEach(person => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-                    <td>${person.joinerName}</td>
-                    <td>${person.voted ? '✅' : '❌'}</td>
-                    <td class="voted-value-column">${person.votedValue}</td>
-                `;
-        leaderboardBody.appendChild(row);
-      });
-
-      leaderboard.style.display = 'table';
-    }
-
-
-    function displayRandomNumber() {
-      const randomNumber = document.getElementById('randomNumber');
-      randomNumber.innerText = `Random Number: ${getRandomNumber()}`;
-    }
-
-    function getRandomNumber() {
-      return Math.floor(Math.random() * 100) + 1;
-    }
-
-    async function handleTileClick(tileContent) {
-
-      const formData = new FormData(joinForm);
-      const joinMessage = tileContent;
-      const roomData = formData.get('roomData');
-      const username = formData.get('username');
-      console.log('Tile Clicked:', tileContent);
-
-      try {
-        const response = await fetch('/send-join-message', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ username, joinMessage, roomData }),
-        });
-
-        if (!response.ok) {
-          throw new Error(`Error sending join message: ${response.statusText}`);
+        } catch (error) {
+          console.error(`Error sending join message: ${error.message}`);
         }
-
-        console.log('Join message sent successfully.');
-
-      } catch (error) {
-        console.error(`Error sending join message: ${error.message}`);
-      }
-    }
-
-    window.onload = populatePage;
-
+      });
+    });
 
   </script>
   <script>
@@ -274,82 +98,100 @@
 
     const eventSource = new EventSource('/sse');
 
-    eventSource.onmessage = async (event) => {
-      const eventData = JSON.parse(event.data);
+    // eventSource.onmessage = async (event) => {
+    //   const eventData = JSON.parse(event.data);
 
-      switch (eventData.action) {
-        case 'newJoiner':
-          console.log(`New joiner option`);
-          if (eventData.url === decodeHtmlEntities('<%= roomData.room_url %>')) {
-            console.log(`New joiner: ${eventData.username}`);
 
+
+
+
+    //   if (eventData.action === 'newJoiner') {
+    //     console.log(`New joiner option`);
+    //     // Check if the URLs match before printing to the console
+    //     if (eventData.url === decodeHtmlEntities('<%= roomData.room_url %>')) {
+    //       console.log(`New joiner: ${eventData.username}`);
+
+    //       // Retry fetching the updated roomData after a timeout if it's still undefined
+    //       if (!roomData) {
+    //         await new Promise(resolve => setTimeout(resolve, 4000)); // 4 seconds timeout
+    //         // Fetch the updated room data here
+    //         // roomData = ...
+    //         console.log('Retrying to fetch updated roomData after timeout...');
+
+    //         // If roomData is still undefined after the timeout, you can handle it accordingly
+    //         if (!roomData) {
+    //           console.log('Room data is still undefined after timeout.');
+    //           return;
+    //         }
+    //       }
+
+    //       // Now you can use the updated roomData
+    //       console.log('Using updated roomData:', roomData);
+    //     } else {
+    //       console.log(`Not equal: ${eventData.url} and <%= roomData.room_url %>`);
+    //     }
+    //   }
+    // };
+
+
+
+  // SSE event listener for handling 'updateJoiners' event
+  eventSource.onmessage = async (event) => {
+    const eventData = JSON.parse(event.data);
+    
+    switch (eventData.action) {
+      case 'newJoiner':
+        console.log(`New joiner option`);
+        if (eventData.url === decodeHtmlEntities('<%= roomData.room_url %>')) {
+          console.log(`New joiner: ${eventData.username}`);
+
+          // Retry fetching the updated roomData after a timeout if it's still undefined
+          if (!roomData) {
+            await new Promise(resolve => setTimeout(resolve, 4000)); // 4 seconds timeout
+            // Fetch the updated room data here
+            // roomData = ...
+            console.log('Retrying to fetch updated roomData after timeout...');
+
+            // If roomData is still undefined after the timeout, you can handle it accordingly
             if (!roomData) {
-              await new Promise(resolve => setTimeout(resolve, 4000));
-
-              console.log('Retrying to fetch updated roomData after timeout...');
-
-              if (!roomData) {
-                console.log('Room data is still undefined after timeout.');
-                return;
-              }
+              console.log('Room data is still undefined after timeout.');
+              return;
             }
-
-            console.log('Using updated roomData:', roomData);
-          } else {
-            console.log(`Not equal: ${eventData.url} and <%= roomData.room_url %>`);
           }
-          break;
 
-          case 'updateJoiners':
-          console.log(`New joiner option`);
-          if (eventData.url === decodeHtmlEntities('<%= roomData.room_url %>')) {
-            console.log(`Updating joiners structure for room: ${eventData.url}`);
-            console.log(`Room Creator: ${eventData.roomCreator}`);
-            console.log('Updated Joiners Structure:', eventData.joinersStructure);
+          // Now you can use the updated roomData
+          console.log('Using updated roomData:', roomData);
+        } else {
+          console.log(`Not equal: ${eventData.url} and <%= roomData.room_url %>`);
+        }
+        break;
 
-            updateLeaderboard(true, eventData.joinersStructure);
-            // updateJoinersStructure(eventData.joinersStructure);
-          }
-          break;
+      case 'updateJoiners':
+        console.log(`Updating joiners structure for room: ${eventData.url}`);
+        console.log(`Room Creator: ${eventData.roomCreator}`);
+        console.log('Updated Joiners Structure:', eventData.joinersStructure);
+        // Update the UI with the new joiners structure
+        updateJoinersStructure(eventData.joinersStructure);
+        break;
 
-        default:
-          console.log(`Unknown action: ${eventData.action}`);
-          break;
-      }
-    };
-
- 
-
-    function updateLeaderboard(shouldRender = false, joinedPeople = []) {
-      console.log("leaderboard data: ", joinedPeople);
-      if (!shouldRender) {
-        return;
-      }
-
-
-      const leaderboard = document.getElementById('leaderboard');
-      const leaderboardBody = leaderboard.querySelector('tbody');
-
-      console.log(joinedPeople + " found");
-      leaderboardBody.innerHTML = '';
-
-      joinedPeople.forEach(person => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-        <td>${person.joinerName}</td>
-        <td>${person.voted ? '✅' : '❌'}</td>
-        <td class="voted-value-column">${person.votedValue}</td>
-    `;
-        leaderboardBody.appendChild(row);
-      });
-
-      leaderboard.style.display = 'table';
+      default:
+        console.log(`Unknown action: ${eventData.action}`);
+        break;
     }
+  };
 
+
+
+
+
+
+    // Function to update the UI with the new joiners structure
     function updateJoinersStructure(joinersStructure) {
+      // Clear the existing joiners list
       const joinersList = document.getElementById('joinersList');
       joinersList.innerHTML = '';
 
+      // Iterate through the new joiners structure and append to the list
       joinersStructure.forEach((joiner) => {
         const listItem = document.createElement('li');
         listItem.innerHTML = `Joiner Name: ${joiner.joinerName}, Joiner ID: ${joiner.joinerId}, Voted: ${joiner.voted}, Voted Value: ${joiner.votedValue}`;
