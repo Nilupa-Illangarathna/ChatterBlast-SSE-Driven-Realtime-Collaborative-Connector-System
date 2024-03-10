@@ -5,75 +5,370 @@
 <head>
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin UI</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
+  <style>
+    body {
+      background-color: #928888b0;
+      display: flex;
+    }
+
+    .left-container {
+      width: 70%;
+      padding: 40px;
+    }
+
+    .right-container {
+      width: 30%;
+      padding: 40px;
+      background-color: #fff;
+      height: 100vh;
+    }
+
+    .tile-container {
+      display: flex;
+      flex-wrap: wrap;
+      margin: -20px;
+    }
+
+    .tile {
+      width: calc(30% - 20px);
+      height: 0;
+      padding-bottom: calc(30% - 20px);
+      border-radius: 6px;
+      margin: 20px;
+      display: inline-block;
+      text-align: center;
+      line-height: 60px;
+      cursor: pointer;
+      transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+      background: #FFF;
+      color: #FFA000;
+      border: 1px solid #FFF;
+      box-shadow: 0 2px 6px 0 rgba(0, 0, 0, 0.26);
+      font-size: 1.5em;
+      padding: 24px;
+    }
+
+    .tile:not(.clickable) {
+      cursor: not-allowed;
+    }
+
+    .tile:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.26);
+    }
+
+    .tile:active {
+      transform: scale(0.95);
+      box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.26);
+    }
+
+    .input-container {
+      width: 400px;
+      margin-top: 30px;
+      margin-bottom: 60px;
+      display: flex;
+      align-items: center;
+    }
+
+    .input-container input {
+      margin-right: 10px;
+    }
+
+    .small-tile {
+      width: calc(10% - 20px);
+      height: 0;
+      padding-bottom: calc(10% - 20px);
+      line-height: 30px;
+      font-size: 1em;
+      margin: 12px;
+    }
+
+    .right-container button,
+    .right-container .leaderboard,
+    .right-container .calculate-button,
+    .right-container .random-number,
+    .right-container .copy-link-button {
+      margin-bottom: 20px;
+      font-size: 1.2em;
+    }
+
+    .leaderboard {
+      list-style-type: none;
+      padding: 0;
+      display: none;
+    }
+
+    .leaderboard th,
+    .leaderboard td {
+      text-align: center;
+      padding: 10px;
+    }
+
+    .leaderboard tr:nth-child(even) {
+      background-color: #f2f2f2;
+    }
+
+    .leaderboard-container {
+      max-height: 500px;
+      overflow-y: auto;
+    }
+
+    .random-number {
+      font-size: 2em;
+      color: #4285F4;
+    }
+
+    .voted-value-column {
+      display: none;
+    }
+  </style>
 </head>
 
 <body>
-  <h1>Welcome <%= username %> to the Admin UI</h1>
+  <div class="left-container">
+    <h2>Welcome <%= username %>
+    </h2>
+    <h1>Admin User Interface</h1>
+    <p>Admin: <%= username %>
+    </p>
 
-  <!-- Room Details -->
-  <p>This is Admin's room</p>
-  <p>Admin: <%= username %>
-  </p>
 
-  <p>Room URL: <%= roomData.room_url %>
-  </p>
-  <p>Room Creator: <%= roomData.room_creator_username %>
-  </p>
-  <p>Joiners: <%= roomData.joiners %>
-  </p>
-  <p>Sequence: <%= roomData.sequence %>
-  </p>
+    <div class="btn-group" role="group" aria-label="Sequence Type">
+      <button type="button" class="btn btn-secondary" onclick="updateSequences('tShirtSizes')">T-Shirt</button>
+      <button type="button" class="btn btn-secondary" onclick="updateSequences('sequence1')">Seq 1</button>
+      <button type="button" class="btn btn-secondary" onclick="updateSequences('sequence2')">Seq 2</button>
+      <button type="button" class="btn btn-secondary" onclick="updateSequences('fibonacci')">Fibonacci</button>
+      <button type="button" class="btn btn-secondary" onclick="updateSequences('custom')">Custom</button>
+    </div>
 
-  <!-- Copy URL Button -->
-  <button onclick="copyToClipboard('<%= roomData.room_url %>')">Copy URL</button>
+    <button class="btn btn-info copy-link-button" onclick="copyToClipboard('<%= roomData.room_url %>')"
+      id="copyLinkButton" disabled>Copy
+      Link</button>
 
-  <!-- Messaging Form -->
-  <form id="adminForm" action="/send-message" method="POST">
-    <label for="message">Send Message:</label>
-    <input type="text" id="message" name="message" required>
-    <button type="submit">Send</button>
-  </form>
+    <div class="input-container">
+      <input type="text" id="sequenceInput" class="form-control" placeholder="Enter a value">
+    </div>
 
-  <!-- Display Messages -->
-  <ul id="messages"></ul>
+    <div id="tileContainer" class="tile-container">
+    </div>
+  </div>
+
+  <div class="right-container">
+    <div class="leaderboard-container">
+      <table class="leaderboard table table-striped" id="leaderboard">
+        <thead>
+          <tr>
+            <th>Joiner Name</th>
+            <th>Voted</th>
+            <th class="voted-value-column">Voted Value</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <form id="adminMessageForm" action="/send-admin-message" method="POST">
+      <button type="submit" class="btn btn-primary" onclick="submitForm()" id="submitButton" disabled>Submit</button>
+    </form>
+
+    <button class="btn btn-success calculate-button" onclick="calculateAverage()" id="calculateButton"
+      disabled>Calculate</button>
+    <div class="random-number" id="randomNumber"></div>
+  </div>
+
+
+
 
   <script>
-    // Use JavaScript to handle form submission asynchronously
+    const tShirtSizes = ['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL'];
+    const sequence1 = [1, 2, 3, 4, 5];
+    const sequence2 = [2, 4, 6, 8, 10];
+    const fibonacci = [0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144];
+    const custom = ['give', 'a', 'comma', 'seperated', 'string'];
+
+    function generateFibonacci(value) {
+      const sequence = [];
+      let a = 0, b = 1;
+
+      while (a < value) {
+        sequence.push(a);
+        const temp = a;
+        a = b;
+        b += temp;
+      }
+
+      return sequence;
+    }
+
+    function generateSequence2(count) {
+      return Array.from({ length: count / 2 }, (_, i) => (i + 1) * 2);
+    }
+
+    let joinedPeople = [];
+
+    function updateSequences(type) {
+      const inputValue = document.getElementById('sequenceInput').value;
+      let updatedSequence;
+
+      switch (type) {
+        case 'tShirtSizes':
+          updatedSequence = tShirtSizes;
+          break;
+        case 'sequence1':
+          const seq1Count = parseInt(inputValue, 10) || 5;
+          updatedSequence = Array.from({ length: seq1Count }, (_, i) => i + 1);
+          break;
+        case 'sequence2':
+          const seq2Count = parseInt(inputValue, 10) || 10;
+          updatedSequence = generateSequence2(seq2Count);
+          break;
+        case 'fibonacci':
+          const fibonacciCount = parseInt(inputValue, 10) || 10;
+          updatedSequence = generateFibonacci(fibonacciCount);
+          break;
+        case 'custom':
+          updatedSequence = inputValue.split(',').map(item => item.trim());
+          break;
+        default:
+          updatedSequence = [];
+      }
+
+      // Add two additional tiles with '?' and '🍵'
+      updatedSequence.push('?');
+      updatedSequence.push('🍵');
+
+      const tileContainer = document.getElementById('tileContainer');
+      tileContainer.innerHTML = '';
+      updatedSequence.forEach((value) => {
+        const tile = document.createElement('div');
+        tile.classList.add('tile', 'small-tile', 'clickable');
+        tile.innerText = value;
+        tile.addEventListener('click', () => {
+          handleTileClick(tile);
+        });
+        tileContainer.appendChild(tile);
+      });
+
+      document.getElementById('submitButton').disabled = !canEnableSubmitButton();
+      document.getElementById('calculateButton').disabled = true;
+      document.getElementById('copyLinkButton').disabled = !canEnableCopyLinkButton();
+    }
+
+
+    function updateLeaderboard(shouldRender = false, joinedPeople = []) {
+      console.log("leaderboard data: ", joinedPeople);
+      if (!shouldRender) {
+        return;
+      }
+
+      document.getElementById('calculateButton').disabled = !haveAllJoinersVoted(joinedPeople);
+
+      const leaderboard = document.getElementById('leaderboard');
+      const leaderboardBody = leaderboard.querySelector('tbody');
+
+      console.log(joinedPeople + " found");
+      leaderboardBody.innerHTML = '';
+
+      joinedPeople.forEach(person => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+        <td>${person.joinerName}</td>
+        <td>${person.voted ? '✅' : '❌'}</td>
+        <td class="voted-value-column">${person.votedValue}</td>
+    `;
+        leaderboardBody.appendChild(row);
+      });
+
+      leaderboard.style.display = 'table';
+    }
+    
+    function submitForm() {
+      const leaderboard = document.getElementById('leaderboard');
+
+      leaderboard.style.display = 'table';
+
+      const votedValueColumns = document.querySelectorAll('.voted-value-column');
+      votedValueColumns.forEach(column => {
+        column.style.display = 'none';
+      });
+
+      document.getElementById('copyLinkButton').disabled = !canEnableSubmitButton();
+      const sequenceString = getCurrentSequence().join(', ');
+      console.log('Sequence:', sequenceString);
+    }
+
+
+    function haveAllJoinersVoted(joinedPeopleArr) {
+      return joinedPeopleArr.length > 0 && joinedPeopleArr.every(person => person.voted);
+    }
+
+    function getCurrentSequence() {
+      const tileContainer = document.getElementById('tileContainer');
+      const tiles = tileContainer.getElementsByClassName('tile');
+      const sequence = Array.from(tiles).map(tile => tile.innerText);
+      return sequence;
+    }
+
+
+    function calculateAverage() {
+      const votedValueColumns = document.querySelectorAll('.voted-value-column');
+      votedValueColumns.forEach(column => {
+        column.style.display = 'table-cell';
+      });
+
+      const randomNumber = document.getElementById('randomNumber');
+      randomNumber.innerText = `Random Number: ${getRandomNumber()}`;
+
+      document.getElementById('calculateButton').disabled = true;
+    }
+
+    function canEnableSubmitButton() {
+      return true; 
+    }
+
+    function canEnableCalculateButton() {
+      return joinedPeople.every(person => person.voted);
+    }
+
+    function getRandomNumber() {
+      return Math.floor(Math.random() * 100) + 1;
+    }
+
+
     document.addEventListener('DOMContentLoaded', () => {
-      const adminForm = document.getElementById('adminForm');
+      const adminMessageForm = document.getElementById('adminMessageForm');
 
-      adminForm.addEventListener('submit', async (event) => {
-        event.preventDefault(); // Prevent the default form submission behavior
+      adminMessageForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
 
-        const formData = new FormData(adminForm);
-        const message = formData.get('message');
+        const formData = new FormData(adminMessageForm);
+        const sequenceInput = getCurrentSequence().join(', ');
 
         try {
-          const response = await fetch('/send-message', {
+          const response = await fetch('/send-admin-message', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ username: '<%= username %>', message }),
+            body: JSON.stringify({ username: '<%= username %>', sequenceInput }),
           });
 
           if (!response.ok) {
-            throw new Error(`Error sending message: ${response.statusText}`);
+            throw new Error(`Error sending admin message: ${response.statusText}`);
           }
 
-          console.log('Message sent successfully.');
+          console.log('Admin message sent successfully.');
 
-          // You can perform additional actions based on the response if needed
 
         } catch (error) {
-          console.error(`Error sending message: ${error.message}`);
+          console.error(`Error sending admin message: ${error.message}`);
         }
       });
     });
 
-    // Function to copy URL to clipboard
     function copyToClipboard(url) {
       const el = document.createElement('textarea');
       el.value = url;
@@ -81,7 +376,6 @@
       el.select();
       document.execCommand('copy');
       document.body.removeChild(el);
-      // alert('URL copied to clipboard!');
     }
   </script>
   <script>
@@ -95,39 +389,81 @@
 
     eventSource.onmessage = async (event) => {
       const eventData = JSON.parse(event.data);
-      if (eventData.action === 'newJoiner') {
-        console.log(`New joiner option`);
-        // Check if the URLs match before printing to the console
-        if (eventData.url === decodeHtmlEntities('<%= roomData.room_url %>')) {
-          console.log(`New joiner: ${eventData.username}`);
 
-          // Retry fetching the updated roomData after a timeout if it's still undefined
-          if (!roomData) {
-            await new Promise(resolve => setTimeout(resolve, 4000)); // 4 seconds timeout
-            // Fetch the updated room data here
-            // roomData = ...
-            console.log('Retrying to fetch updated roomData after timeout...');
+      switch (eventData.action) {
+        case 'newJoiner':
+          console.log(`New joiner option`);
+          if (eventData.url === decodeHtmlEntities('<%= roomData.room_url %>')) {
+            console.log(`New joiner: ${eventData.username}`);
 
-            // If roomData is still undefined after the timeout, you can handle it accordingly
             if (!roomData) {
-              console.log('Room data is still undefined after timeout.');
-              return;
-            }
-          }
+              await new Promise(resolve => setTimeout(resolve, 4000));
+              console.log('Retrying to fetch updated roomData after timeout...');
 
-          // Now you can use the updated roomData
-          console.log('Using updated roomData:', roomData);
-        } else {
-          console.log(`Not equal: ${eventData.url} and <%= roomData.room_url %>`);
-        }
+              if (!roomData) {
+                console.log('Room data is still undefined after timeout.');
+                return;
+              }
+            }
+
+            console.log('Using updated roomData:', roomData);
+          } else {
+            console.log(`Not equal: ${eventData.url} and <%= roomData.room_url %>`);
+          }
+          break;
+
+        case 'updateJoiners':
+          console.log(`New joiner option`);
+          if (eventData.url === decodeHtmlEntities('<%= roomData.room_url %>')) {
+            console.log(`Updating joiners structure for room: ${eventData.url}`);
+            console.log(`Room Creator: ${eventData.roomCreator}`);
+            console.log('Updated Joiners Structure:', eventData.joinersStructure);
+
+            updateLeaderboard(true, eventData.joinersStructure);
+            updateJoinersStructure(eventData.joinersStructure);
+          }
+          break;
+
+        case 'updateSequence':
+          if (eventData.url === decodeHtmlEntities('<%= roomData.room_url %>')) {
+            console.log(`Updating sequence for room: ${eventData.url}`);
+            console.log(`Room Creator: ${eventData.roomCreator}`);
+            console.log('Updated Sequence:', eventData.sequence);
+
+            updateSequence(eventData.sequence);
+          }
+          break;
+        default:
+          console.log(`Unknown action: ${eventData.action}`);
+          break;
       }
     };
 
 
+    function updateJoinersStructure(joinersStructure) {
+      console.log('Updated Joiners Structure in the fucntion :', eventData.joinersStructure);
+      const joinersList = document.getElementById('joinersList');
+      joinersList.innerHTML = '';
+
+      joinersStructure.forEach((joiner) => {
+        const listItem = document.createElement('li');
+        listItem.innerHTML = `Joiner Name: ${joiner.joinerName}, Joiner ID: ${joiner.joinerId}, Voted: ${joiner.voted}, Voted Value: ${joiner.votedValue}`;
+        joinersList.appendChild(listItem);
+      });
+    }
+
+    function updateSequence(sequence) {
+      const sequenceElement = document.getElementById('sequence');
+      if (sequenceElement) {
+        sequenceElement.innerText = `Sequence: ${sequence}`;
+      }
+    }
+
     eventSource.onerror = (error) => {
-      console.error('SSE Error:', error);
-      eventSource.close();
-    };
+  console.error('SSE Error:', error);
+  eventSource.close();
+};
+
   </script>
 
 </body>
