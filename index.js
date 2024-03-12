@@ -160,15 +160,23 @@ app.post('/join-room', async (req, res) => {
 
       console.log(url);
       sseClients.forEach(client => {
-        client.sseSend({ action: 'newJoiner', username, url });
+        client.sseSend({
+          action: 'newJoiner',
+          username,
+          url,
+          spectator: joinersData[joinerKey].spectator,  // Add this line
+        });
       });
+      
     } else {
       const joinerKey = `${username}`;
 
       joinersData[joinerKey] = {
         joined_at: new Date().toISOString(),
         messages: [],
+        spectator: false,  // Add this line
       };
+      
 
       const { data: updatedRoom, updateError } = await supabase
         .from('rooms')
@@ -187,12 +195,19 @@ app.post('/join-room', async (req, res) => {
         url: url,
         roomCreator: joinersData.room_creator_username,
       });
+      
 
       res.render('join-ui', { username, userMessages: [], roomData });
 
       sseClients.forEach(client => {
-        client.sseSend({ action: 'newJoiner', username });
+        client.sseSend({
+          action: 'newJoiner',
+          username,
+          url,
+          spectator: joinersData[joinerKey].spectator,  // Add this line
+        });
       });
+      
 
 
     }
@@ -311,9 +326,11 @@ function createJoinersStructure(joinersData) {
       joinerId: joinerKey.split('-')[1],
       voted: joiner.messages.length > 0,
       votedValue: joiner.messages.length > 0 ? joiner.messages[joiner.messages.length - 1] : '',
+      spectator: joiner.spectator,  // Add this line
     };
   });
 }
+
 
 function broadcastToClients(data) {
   sseClients.forEach(client => {
