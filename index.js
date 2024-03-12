@@ -268,6 +268,65 @@ app.post('/send-join-message', async (req, res) => {
   }
 });
 
+app.post('/send-admin-message', async (req, res) => {
+  try {
+    const { username, sequenceInput } = req.body;
+
+    // Fetch the existing room data
+    const { data: existingRoom, error: fetchError } = await supabase
+      .from('rooms')
+      .select('sequence')
+      .eq('room_creator_username', username)
+      .single();
+
+    if (fetchError) {
+      throw new Error(`Error fetching room data from Supabase: ${fetchError.message}`);
+    }
+
+    // Append the new sequence message to the existing sequence
+    const updatedSequence = sequenceInput;
+
+    // Update the sequence column in the Supabase table using the room_creator_username
+    const { data: updatedRoom, updateError } = await supabase
+      .from('rooms')
+      .update({ sequence: updatedSequence }) // Update the sequence column
+      .eq('room_creator_username', username)
+      .single();
+
+    if (updateError) {
+      throw new Error(`Error updating room data in Supabase: ${updateError.message}`);
+    }
+
+    // Broadcast the updated sequence to all clients
+    broadcastToClients({
+      action: 'updateSequence',
+      sequence: updatedRoom.sequence,
+      url: updatedRoom.room_url,
+      roomCreator: updatedRoom.room_creator_username,
+    });
+
+    // Render the admin-ui.ejs with updated data
+    // res.render('admin-ui', { username, roomData: updatedRoom });
+
+    // Broadcast the updated joiners structure to all clients
+    const updatedJoinersStructure = createJoinersStructure(JSON.parse(updatedRoom.joiners));
+    broadcastToClients({
+      action: 'updateJoiners',
+      joinersStructure: updatedJoinersStructure,
+      url: updatedRoom.room_url,
+      roomCreator: updatedRoom.room_creator_username,
+    });
+
+    // Return here to avoid the "headers already sent" error
+    return;
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error processing admin message');
+  }
+});
+
+
+
 // Helper function to create the desired structure from joinersData
 function createJoinersStructure(joinersData) {
   return Object.keys(joinersData).map((joinerKey) => {

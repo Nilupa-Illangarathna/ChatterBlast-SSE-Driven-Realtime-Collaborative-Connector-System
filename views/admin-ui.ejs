@@ -26,13 +26,15 @@
   <p>Sequence: <%= roomData.sequence %>
   </p>
 
+  <p>Sequence got from the databse after submission: <%= roomData.sequence %>
+  </p>
   <!-- Copy URL Button -->
   <button onclick="copyToClipboard('<%= roomData.room_url %>')">Copy URL</button>
 
-  <!-- Messaging Form -->
-  <form id="adminForm" action="/send-message" method="POST">
-    <label for="message">Send Message:</label>
-    <input type="text" id="message" name="message" required>
+  <!-- Admin Message Form -->
+  <form id="adminMessageForm" action="/send-admin-message" method="POST">
+    <label for="sequenceInput">Sequence Input:</label>
+    <input type="text" id="sequenceInput" name="sequenceInput" required>
     <button type="submit">Send</button>
   </form>
 
@@ -40,38 +42,39 @@
   <ul id="messages"></ul>
 
   <script>
-    // Use JavaScript to handle form submission asynchronously
+    // Use JavaScript to handle admin message form submission asynchronously
     document.addEventListener('DOMContentLoaded', () => {
-      const adminForm = document.getElementById('adminForm');
+      const adminMessageForm = document.getElementById('adminMessageForm');
 
-      adminForm.addEventListener('submit', async (event) => {
+      adminMessageForm.addEventListener('submit', async (event) => {
         event.preventDefault(); // Prevent the default form submission behavior
 
-        const formData = new FormData(adminForm);
-        const message = formData.get('message');
+        const formData = new FormData(adminMessageForm);
+        const sequenceInput = formData.get('sequenceInput');
 
         try {
-          const response = await fetch('/send-message', {
+          const response = await fetch('/send-admin-message', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ username: '<%= username %>', message }),
+            body: JSON.stringify({ username: '<%= username %>', sequenceInput }),
           });
 
           if (!response.ok) {
-            throw new Error(`Error sending message: ${response.statusText}`);
+            throw new Error(`Error sending admin message: ${response.statusText}`);
           }
 
-          console.log('Message sent successfully.');
+          console.log('Admin message sent successfully.');
 
           // You can perform additional actions based on the response if needed
 
         } catch (error) {
-          console.error(`Error sending message: ${error.message}`);
+          console.error(`Error sending admin message: ${error.message}`);
         }
       });
     });
+
 
     // Function to copy URL to clipboard
     function copyToClipboard(url) {
@@ -131,78 +134,19 @@
           updateJoinersStructure(eventData.joinersStructure);
           break;
 
-        default:
-          console.log(`Unknown action: ${eventData.action}`);
-          break;
-      }
-    };
-
-
-
-
-
-
-    // // Function to update the UI with the new joiners structure
-    // function updateJoinersStructure(joinersStructure) {
-    //   // Clear the existing joiners list
-    //   const joinersList = document.getElementById('joinersList');
-    //   joinersList.innerHTML = '';
-
-    //   // Iterate through the new joiners structure and append to the list
-    //   joinersStructure.forEach((joiner) => {
-    //     const listItem = document.createElement('li');
-    //     listItem.innerHTML = `Joiner Name: ${joiner.joinerName}, Joiner ID: ${joiner.joinerId}, Voted: ${joiner.voted}, Voted Value: ${joiner.votedValue}`;
-    //     joinersList.appendChild(listItem);
-    //   });
-    // }
-
-    eventSource.onmessage = async (event) => {
-      const eventData = JSON.parse(event.data);
-
-      switch (eventData.action) {
-        case 'newJoiner':
-          console.log(`New joiner option`);
-          if (eventData.url === decodeHtmlEntities('<%= roomData.room_url %>')) {
-            console.log(`New joiner: ${eventData.username}`);
-
-            // Retry fetching the updated roomData after a timeout if it's still undefined
-            if (!roomData) {
-              await new Promise(resolve => setTimeout(resolve, 4000)); // 4 seconds timeout
-              // Fetch the updated room data here
-              // roomData = ...
-              console.log('Retrying to fetch updated roomData after timeout...');
-
-              // If roomData is still undefined after the timeout, you can handle it accordingly
-              if (!roomData) {
-                console.log('Room data is still undefined after timeout.');
-                return;
-              }
-            }
-
-            // Now you can use the updated roomData
-            console.log('Using updated roomData:', roomData);
-          } else {
-            console.log(`Not equal: ${eventData.url} and <%= roomData.room_url %>`);
-          }
-          break;
-
-        case 'updateJoiners':
-          console.log(`Updating joiners structure for room: ${eventData.url}`);
+        case 'updateSequence':
+          console.log(`Updating sequence for room: ${eventData.url}`);
           console.log(`Room Creator: ${eventData.roomCreator}`);
-          console.log('Updated Joiners Structure:', eventData.joinersStructure);
-          // Update the UI with the new joiners structure
-          updateJoinersStructure(eventData.joinersStructure);
-          break;
+          console.log('Updated Sequence:', eventData.sequence);
 
+          // Update the UI with the new sequence information
+          updateSequence(eventData.sequence);
+          break;
         default:
           console.log(`Unknown action: ${eventData.action}`);
           break;
       }
     };
-
-
-
-
 
 
     // Function to update the UI with the new joiners structure
@@ -219,6 +163,14 @@
       });
     }
 
+    // Function to update the UI with the new sequence information
+    function updateSequence(sequence) {
+      // Update the sequence in your UI
+      const sequenceElement = document.getElementById('sequence');
+      if (sequenceElement) {
+        sequenceElement.innerText = `Sequence: ${sequence}`;
+      }
+    }
 
     eventSource.onerror = (error) => {
       console.error('SSE Error:', error);
