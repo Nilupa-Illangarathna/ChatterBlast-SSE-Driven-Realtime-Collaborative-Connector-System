@@ -75,7 +75,7 @@
     .input-container input {
       margin-right: 10px;
     }
-    
+
     .small-tile {
       width: calc(10% - 20px);
       height: 0;
@@ -141,6 +141,10 @@
 
   <div class="right-container">
     <div class="leaderboard-container">
+      <div class="description-container">
+        <h3>Description</h3>
+        <p id="descriptionText"></p>
+      </div>
       <table class="leaderboard table table-striped" id="leaderboard">
         <thead>
           <tr>
@@ -168,14 +172,10 @@
 
 
   <script>
-    let joinedPeople = [
-      { joinerName: 'John', joinerId: '1', voted: true, votedValue: '5' },
-      { joinerName: 'Alice', joinerId: '2', voted: true, votedValue: '6' },
-      { joinerName: 'Bob', joinerId: '3', voted: true, votedValue: '' },
-      { joinerName: 'Eva', joinerId: '4', voted: true, votedValue: '' },
-      { joinerName: 'Mike', joinerId: '5', voted: true, votedValue: '4' },
-      { joinerName: 'Sophie', joinerId: '6', voted: true, votedValue: '3' },
-    ];
+  function populateDescription(description) {
+    const descriptionText = document.getElementById('descriptionText');
+    descriptionText.innerText = description;
+  }
 
     function generateTilesFromSequence(sequence) {
       const tileContainer = document.getElementById('tileContainer');
@@ -187,6 +187,8 @@
 
       const finalArray2 = resultArray2.slice(0, -2);
 
+      finalArray2.push('?');
+      finalArray2.push('🍵');
       finalArray2.forEach((value) => {
         const tile = document.createElement('div');
         tile.classList.add('tile', 'small-tile', 'clickable');
@@ -199,9 +201,7 @@
     function populatePage() {
       const sequenceData = '<%= roomData.sequence %>';
       generateTilesFromSequence(sequenceData);
-
-      populateLeaderboard();
-      displayRandomNumber();
+      populateDescription('<%= roomData.description %>');
     }
 
     function populateLeaderboard() {
@@ -224,14 +224,13 @@
     }
 
 
-    function displayRandomNumber() {
-      const randomNumber = document.getElementById('randomNumber');
-      randomNumber.innerText = `Random Number: ${getRandomNumber()}`;
+    function displayRandomNumber(getRandomNumber) {
+      const randomNumberElement = document.getElementById('randomNumber');
+      randomNumberElement.innerText = `Random Number: ${getRandomNumber}`;
     }
 
-    function getRandomNumber() {
-      return Math.floor(Math.random() * 100) + 1;
-    }
+
+
 
     async function handleTileClick(tileContent) {
 
@@ -300,7 +299,7 @@
           }
           break;
 
-          case 'updateJoiners':
+        case 'updateJoiners':
           console.log(`New joiner option`);
           if (eventData.url === decodeHtmlEntities('<%= roomData.room_url %>')) {
             console.log(`Updating joiners structure for room: ${eventData.url}`);
@@ -312,13 +311,30 @@
           }
           break;
 
+        case 'adminEvent': // Handle the new 'adminEvent'
+          console.log('Received admin event:', eventData);
+          console.log(eventData.roomData);
+          console.log(decodeHtmlEntities('<%= roomData.room_url %>'));
+          if (eventData.roomData === decodeHtmlEntities('<%= roomData.room_url %>')) {
+            // Print the admin event data
+            console.log('Random Number:', eventData.randomNumber);
+            console.log('Room Data:', eventData.roomData);
+            console.log('Joined People:', eventData.joinedPeople);
+            updateLeaderboardAfterCalculate(true, eventData.joinedPeople, eventData.randomNumber);
+            displayRandomNumber(eventData.randomNumber);
+
+          }
+
+          // You can perform actions or update UI based on the admin event data
+          break;
+
         default:
           console.log(`Unknown action: ${eventData.action}`);
           break;
       }
     };
 
- 
+
 
     function updateLeaderboard(shouldRender = false, joinedPeople = []) {
       console.log("leaderboard data: ", joinedPeople);
@@ -339,6 +355,32 @@
         <td>${person.joinerName}</td>
         <td>${person.voted ? '✅' : '❌'}</td>
         <td class="voted-value-column">${person.votedValue}</td>
+    `;
+        leaderboardBody.appendChild(row);
+      });
+
+      leaderboard.style.display = 'table';
+    }
+
+    function updateLeaderboardAfterCalculate(shouldRender = false, joinedPeople = []) {
+      console.log("leaderboard data: ", joinedPeople);
+      if (!shouldRender) {
+        return;
+      }
+
+
+      const leaderboard = document.getElementById('leaderboard');
+      const leaderboardBody = leaderboard.querySelector('tbody');
+
+      console.log(joinedPeople + " found");
+      leaderboardBody.innerHTML = '';
+
+      joinedPeople.forEach(person => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+        <td>${person.joinerName}</td>
+        <td>${person.voted ? '✅' : '❌'}</td>
+        <td>${person.votedValue}</td>
     `;
         leaderboardBody.appendChild(row);
       });

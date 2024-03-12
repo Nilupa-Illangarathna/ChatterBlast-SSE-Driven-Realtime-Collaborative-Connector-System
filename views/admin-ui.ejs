@@ -152,6 +152,9 @@
     <div class="input-container">
       <input type="text" id="sequenceInput" class="form-control" placeholder="Enter a value">
     </div>
+    <div class="input-container">
+      <input type="text" id="descriptionInput" class="form-control" placeholder="Enter a description">
+    </div>
 
     <div id="tileContainer" class="tile-container">
     </div>
@@ -175,7 +178,7 @@
     </form>
 
     <button class="btn btn-success calculate-button"
-      onclick="calculateAverage(randomNumber, '<%= roomData.room_url %>')" id="calculateButton"
+      onclick="calculateAverage(randomNumber, '<%= roomData %>')" id="calculateButton"
       disabled>Calculate</button>
     <div class="random-number" id="randomNumber"></div>
   </div>
@@ -210,9 +213,12 @@
 
     let joinedPeople = [];
 
+    let updatedSequence;
+
     function updateSequences(type) {
       const inputValue = document.getElementById('sequenceInput').value;
-      let updatedSequence;
+      const description = document.getElementById('descriptionInput').value;
+
 
       switch (type) {
         case 'tShirtSizes':
@@ -253,7 +259,8 @@
         tileContainer.appendChild(tile);
       });
 
-      document.getElementById('submitButton').disabled = !canEnableSubmitButton();
+      document.getElementById('submitButton').disabled = !canEnableSubmitButton()|| description.trim() === '';
+      // submitButton.disabled = !canEnableSubmitButton() || description.trim() === '';
       document.getElementById('calculateButton').disabled = true;
       document.getElementById('copyLinkButton').disabled = !canEnableCopyLinkButton();
     }
@@ -286,6 +293,21 @@
       leaderboard.style.display = 'table';
     }
 
+    let joinedPeopleTemp = [];
+
+    function getVotedValuesArray() {
+      const votedValuesArray = [];
+
+      joinedPeopleTemp.forEach(person => {
+        if (person.voted) {
+          votedValuesArray.push(person.votedValue);
+        }
+      });
+
+      return votedValuesArray;
+    }
+
+
     function submitForm() {
       const leaderboard = document.getElementById('leaderboard');
 
@@ -313,13 +335,36 @@
       return sequence;
     }
 
-    let joinedPeopleTemp = [];
+    function getCurrentDescription() {
+  const descriptionInput = document.getElementById('descriptionInput');
+  const description = descriptionInput.value.trim();
+  console.log("description is ", description);
+  return description;
+}
+
+
+
+
     // admin-ui.ejs
     function calculateAverage(randomNumber, roomData) {
+
+      // Show the Voted Value column when the calculate button is pressed
+      const votedValueColumns = document.querySelectorAll('.voted-value-column');
+      votedValueColumns.forEach(column => {
+        column.style.display = 'table-cell';
+      });
+
+      // Show the random number
+      const randomNumberElement = document.getElementById('randomNumber');
+      randomNumberElement.innerText = `Random Number: ${calculateAverageOrMedian(getVotedValuesArray())}`;
+
+      // Disable the calculate button after it's pressed
+      document.getElementById('calculateButton').disabled = true;
+
       console.log("Sending data to the server...");
 
-      console.log(`Received message from admin: ${randomNumber}`);
-      console.log('Received room data:', roomData);
+      console.log(`Received message from admin: ${calculateAverageOrMedian(getVotedValuesArray())}`);
+      console.log('Received room data:', decodeHtmlEntities('<%= roomData.room_url %>'));
       console.log('Received joined people data:', joinedPeopleTemp);
 
       // Send data to the server
@@ -328,7 +373,7 @@
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ randomNumber: 'Hello, world!', roomData: roomData, joinedPeople: joinedPeopleTemp }),
+        body: JSON.stringify({ randomNumber: calculateAverageOrMedian(getVotedValuesArray()), roomData: decodeHtmlEntities('<%= roomData.room_url %>'), joinedPeople: joinedPeopleTemp }),
       })
         .then(response => {
           if (!response.ok) {
@@ -358,9 +403,28 @@
       return joinedPeople;
     }
 
-    function getRandomNumber() {
-      return Math.floor(Math.random() * 100) + 1;
+
+    function calculateAverageOrMedian(sequence) {
+
+      const filteredValues = sequence.filter(value => value !== '?' && value !== '🍵');
+
+      const allInteger = filteredValues.every(value => !isNaN(parseInt(value, 10)));
+
+      if (allInteger) {
+        const numericArray = filteredValues.map(value => parseInt(value, 10));
+
+        const sum = numericArray.reduce((acc, value) => acc + value, 0);
+        const average = sum / sequence.length;
+
+        return average;
+      } else {
+        console.log("No average");
+        return "No average";
+      }
     }
+
+
+
 
 
     document.addEventListener('DOMContentLoaded', () => {
@@ -371,14 +435,15 @@
 
         const formData = new FormData(adminMessageForm);
         const sequenceInput = getCurrentSequence().join(', ');
-
+        const description = getCurrentDescription();
+        
         try {
           const response = await fetch('/send-admin-message', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ username: '<%= username %>', sequenceInput }),
+            body: JSON.stringify({ username: '<%= username %>', sequenceInput, description }),
           });
 
           if (!response.ok) {
