@@ -19,8 +19,8 @@ This is a real-time voting system implemented using Server-Sent Events (SSE), No
 
 <table>
   <tr>
-    <td><img src="https://user-images.githubusercontent.com/95247831/202404619-90a20e87-9c9e-42f6-9749-dc21b60e30a2.jpg" width=300></td>
-    <td><img src="https://user-images.githubusercontent.com/95247831/202404483-0999cac6-2d80-4e38-914a-b109d3400336.jpg" width=300></td>
+    <td><img src="https://user-images.githubusercontent.com/95247831/202404619-90a20e87-9c9e-42f6-9749-dc21b60e30a2.jpg" width="100%"></td>
+    <td><img src="https://user-images.githubusercontent.com/95247831/202404483-0999cac6-2d80-4e38-914a-b109d3400336.jpg" width="100%"></td>
   </tr>
   <tr>
     <td><img src="https://user-images.githubusercontent.com/95247831/202404908-3e44a6cb-c601-4050-b8fd-fcc9ede73171.jpg" width=300></td>
