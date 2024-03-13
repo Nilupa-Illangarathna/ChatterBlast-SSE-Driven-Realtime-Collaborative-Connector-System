@@ -23,27 +23,27 @@ This is a real-time voting system implemented using Server-Sent Events (SSE), No
     <td><img src="https://github.com/Nilupa-Illangarathna/ChatterBlast-SSE-Driven-Realtime-Collaborative-Connector-System/assets/95247831/f672be63-3c1b-47ca-bcaf-7a33e2171e1f.jpg" style="width: 100%;"></td>
   </tr>
   <tr>
-    <td><img src="https://github.com/Nilupa-Illangarathna/ChatterBlast-SSE-Driven-Realtime-Collaborative-Connector-System/assets/95247831/be3ad2b1-3beb-460e-a878-ee8a4a14e2d3.jpg" width=300></td>
-    <td><img src="https://github.com/Nilupa-Illangarathna/ChatterBlast-SSE-Driven-Realtime-Collaborative-Connector-System/assets/95247831/ad3f685e-c13e-41ec-a873-66a1e1b610ba.jpg" width=300></td>
+    <td><img src="https://github.com/Nilupa-Illangarathna/ChatterBlast-SSE-Driven-Realtime-Collaborative-Connector-System/assets/95247831/be3ad2b1-3beb-460e-a878-ee8a4a14e2d3.jpg" style="width: 100%;"></td>
+    <td><img src="https://github.com/Nilupa-Illangarathna/ChatterBlast-SSE-Driven-Realtime-Collaborative-Connector-System/assets/95247831/ad3f685e-c13e-41ec-a873-66a1e1b610ba.jpg" style="width: 100%;"></td>
   </tr>
   <tr>
-    <td><img src="https://github.com/Nilupa-Illangarathna/ChatterBlast-SSE-Driven-Realtime-Collaborative-Connector-System/assets/95247831/b00f3f66-309d-499f-a9a4-1bb431050de0.jpg" width=300></td>
-    <td><img src="https://github.com/Nilupa-Illangarathna/ChatterBlast-SSE-Driven-Realtime-Collaborative-Connector-System/assets/95247831/4e96ee55-c303-4135-8f79-94b083913969.jpg" width=300></td>
+    <td><img src="https://github.com/Nilupa-Illangarathna/ChatterBlast-SSE-Driven-Realtime-Collaborative-Connector-System/assets/95247831/b00f3f66-309d-499f-a9a4-1bb431050de0.jpg" style="width: 100%;"></td>
+    <td><img src="https://github.com/Nilupa-Illangarathna/ChatterBlast-SSE-Driven-Realtime-Collaborative-Connector-System/assets/95247831/4e96ee55-c303-4135-8f79-94b083913969.jpg" style="width: 100%;"></td>
   </tr>
   <tr>
-    <td><img src="https://github.com/Nilupa-Illangarathna/ChatterBlast-SSE-Driven-Realtime-Collaborative-Connector-System/assets/95247831/b00f3f66-309d-499f-a9a4-1bb431050de0.jpg" width=300></td>
-    <td><img src="https://github.com/Nilupa-Illangarathna/ChatterBlast-SSE-Driven-Realtime-Collaborative-Connector-System/assets/95247831/6e6602e2-ebd1-465b-9456-6217c79fdddf.jpg" width=300></td>
+    <td><img src="https://github.com/Nilupa-Illangarathna/ChatterBlast-SSE-Driven-Realtime-Collaborative-Connector-System/assets/95247831/b00f3f66-309d-499f-a9a4-1bb431050de0.jpg" style="width: 100%;"></td>
+    <td><img src="https://github.com/Nilupa-Illangarathna/ChatterBlast-SSE-Driven-Realtime-Collaborative-Connector-System/assets/95247831/6e6602e2-ebd1-465b-9456-6217c79fdddf.jpg" style="width: 100%;"></td>
   </tr>
   <tr>
-    <td><img src="https://github.com/Nilupa-Illangarathna/ChatterBlast-SSE-Driven-Realtime-Collaborative-Connector-System/assets/95247831/51cd7aa7-a7e0-44ec-8547-635779d150d6.jpg" width=300></td>
-    <td><img src="https://github.com/Nilupa-Illangarathna/ChatterBlast-SSE-Driven-Realtime-Collaborative-Connector-System/assets/95247831/e4f169c6-059b-4e46-aee8-a166c04f151f.jpg" width=300></td>
+    <td><img src="https://github.com/Nilupa-Illangarathna/ChatterBlast-SSE-Driven-Realtime-Collaborative-Connector-System/assets/95247831/51cd7aa7-a7e0-44ec-8547-635779d150d6.jpg" style="width: 100%;"></td>
+    <td><img src="https://github.com/Nilupa-Illangarathna/ChatterBlast-SSE-Driven-Realtime-Collaborative-Connector-System/assets/95247831/e4f169c6-059b-4e46-aee8-a166c04f151f.jpg" style="width: 100%;"></td>
   </tr>
   <tr>
-    <td><img src="https://github.com/Nilupa-Illangarathna/ChatterBlast-SSE-Driven-Realtime-Collaborative-Connector-System/assets/95247831/51cd7aa7-a7e0-44ec-8547-635779d150d6.jpg" width=300></td>
-    <td><img src="https://github.com/Nilupa-Illangarathna/ChatterBlast-SSE-Driven-Realtime-Collaborative-Connector-System/assets/95247831/19218703-bbea-4379-8dd7-32e006f4fef9.jpg" width=300></td>
+    <td><img src="https://github.com/Nilupa-Illangarathna/ChatterBlast-SSE-Driven-Realtime-Collaborative-Connector-System/assets/95247831/51cd7aa7-a7e0-44ec-8547-635779d150d6.jpg" style="width: 100%;"></td>
+    <td><img src="https://github.com/Nilupa-Illangarathna/ChatterBlast-SSE-Driven-Realtime-Collaborative-Connector-System/assets/95247831/19218703-bbea-4379-8dd7-32e006f4fef9.jpg" style="width: 100%;"></td>
   </tr>
   <tr>
-    <td colspan="2"><img src="https://github.com/Nilupa-Illangarathna/ChatterBlast-SSE-Driven-Realtime-Collaborative-Connector-System/assets/95247831/e4f169c6-059b-4e46-aee8-a166c04f151f.jpg" width=600></td>
+    <td colspan="2"><img src="https://github.com/Nilupa-Illangarathna/ChatterBlast-SSE-Driven-Realtime-Collaborative-Connector-System/assets/95247831/e4f169c6-059b-4e46-aee8-a166c04f151f.jpg" style="width: 100%;"></td>
   </tr>
 </table>
 
