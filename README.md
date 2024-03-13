@@ -19,8 +19,8 @@ This is a real-time voting system implemented using Server-Sent Events (SSE), No
 
 <table>
   <tr>
-    <td><img src="https://github.com/Nilupa-Illangarathna/ChatterBlast-SSE-Driven-Realtime-Collaborative-Connector-System/assets/95247831/2b577a18-4bed-496a-aa06-9389e85fdc93.jpg" width="100%"></td>
-    <td><img src="https://github.com/Nilupa-Illangarathna/ChatterBlast-SSE-Driven-Realtime-Collaborative-Connector-System/assets/95247831/f672be63-3c1b-47ca-bcaf-7a33e2171e1f.jpg" width="100%"></td>
+    <td><img src="https://github.com/Nilupa-Illangarathna/ChatterBlast-SSE-Driven-Realtime-Collaborative-Connector-System/assets/95247831/2b577a18-4bed-496a-aa06-9389e85fdc93.jpg" style="width: 100%;"></td>
+    <td><img src="https://github.com/Nilupa-Illangarathna/ChatterBlast-SSE-Driven-Realtime-Collaborative-Connector-System/assets/95247831/f672be63-3c1b-47ca-bcaf-7a33e2171e1f.jpg" style="width: 100%;"></td>
   </tr>
   <tr>
     <td><img src="https://github.com/Nilupa-Illangarathna/ChatterBlast-SSE-Driven-Realtime-Collaborative-Connector-System/assets/95247831/be3ad2b1-3beb-460e-a878-ee8a4a14e2d3.jpg" width=300></td>
