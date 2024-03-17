@@ -1,4 +1,3 @@
-
 <!-- views/admin-ui.ejs -->
 <!DOCTYPE html>
 <html lang="en">
@@ -40,7 +39,7 @@
     .tile-container {
       display: flex;
       flex-wrap: wrap;
-      margin: -20px;
+      margin: 20px;
     }
 
     .tile {
@@ -207,6 +206,9 @@
     </div>
 
 
+    <div id="countdownTimer" class="timer-container">
+      <!-- Countdown timer will be displayed here -->
+    </div>
 
 
     <div id="tileContainer" class="tile-container">
@@ -233,7 +235,8 @@
     </form>
 
     <button class="btn btn-success calculate-button zoomed-out-container"
-      onclick="calculateAverage(randomNumber, '<%= roomData %>')" id="calculateButton" disabled>Calculate</button>
+      onclick="calculateAverage(randomNumber, '<%= roomData %>', false)" id="calculateButton"
+      disabled>Calculate</button>
     <div class="random-number" id="randomNumber"></div>
   </div>
 
@@ -335,7 +338,6 @@
       const leaderboard = document.getElementById('leaderboard');
       const leaderboardBody = leaderboard.querySelector('tbody');
 
-      console.log(joinedPeople + " found");
       leaderboardBody.innerHTML = '';
 
       joinedPeople.forEach(person => {
@@ -349,7 +351,7 @@
           <span class="slider round"></span>
         </label>
       </td>
-      <td class="voted-value-column">${person.votedValue === "SpectatorEntity" ? "🕵️" : person.votedValue}</td>
+      <td class="voted-value-column">${person.votedValue === "SpectatorEntity" ? "🕵️" : person.voted ? person.votedValue : "⛔"}</td>
     `;
         leaderboardBody.appendChild(row);
       });
@@ -358,9 +360,6 @@
     }
 
     function toggleSpectator(joinerName, isChecked) {
-
-      console.log('Received room data joinerName:', joinerName);
-      console.log('Received room data isChecked:', isChecked);
 
       fetch('/toggle-spectator', {
         method: 'POST',
@@ -437,7 +436,7 @@
 
 
     // admin-ui.ejs
-    function calculateAverage(randomNumber, roomData) {
+    function calculateAverage(randomNumber, roomData, timerExpired = false) {
 
       // Show the Voted Value column when the calculate button is pressed
       const votedValueColumns = document.querySelectorAll('.voted-value-column');
@@ -447,16 +446,13 @@
 
       // Show the random number
       const randomNumberElement = document.getElementById('randomNumber');
-      randomNumberElement.innerText = `Random Number: ${calculateAverageOrMedian(getVotedValuesArray())}`;
+
+      const averageNumber = calculateAverageOrMedian(getVotedValuesArray(), timerExpired);
+
+      randomNumberElement.innerText = `Average: ${averageNumber}`;
 
       // Disable the calculate button after it's pressed
       document.getElementById('calculateButton').disabled = true;
-
-      console.log("Sending data to the server...");
-
-      console.log(`Received message from admin: ${calculateAverageOrMedian(getVotedValuesArray())}`);
-      console.log('Received room data:', decodeHtmlEntities('<%= roomData.room_url %>'));
-      console.log('Received joined people data:', joinedPeopleTemp);
 
       // Send data to the server
       fetch('/broadcast-data', {
@@ -464,7 +460,7 @@
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ randomNumber: calculateAverageOrMedian(getVotedValuesArray()), roomData: decodeHtmlEntities('<%= roomData.room_url %>'), joinedPeople: joinedPeopleTemp }),
+        body: JSON.stringify({ randomNumber: averageNumber, roomData: decodeHtmlEntities('<%= roomData.room_url %>'), joinedPeople: joinedPeopleTemp }),
       })
         .then(response => {
           if (!response.ok) {
@@ -494,14 +490,53 @@
       return joinedPeople;
     }
 
+    // TODO: timer reusable
+    function startCountdownTimer(timerId, timestamp, timerValue) {
+      const timerElement = document.getElementById(timerId);
+      console.log("In Function in Timestamp:", timestamp);
+      console.log("In Function in timerValue:", timerValue);
 
-    function calculateAverageOrMedian(sequence) {
+      const currentTimestamp = new Date().getTime();
+      console.log("Current Timestamp:", currentTimestamp);
+
+      const timeGap = currentTimestamp - timestamp;
+
+      console.log(" timeGap:", timeGap);
+
+      const startTime = Math.max(timeGap, 0);
+
+      console.log("startTime:", startTime);
+
+      const targetTimestamp = timerValue * 1000;
+      const timerInterval = setInterval(() => {
+        const currentTimestampInterval = new Date().getTime();
+
+        const remainingTime = Math.max(targetTimestamp - startTime - (currentTimestampInterval - currentTimestamp), 0);
+        console.log("Remaining Time:", remainingTime);
+
+        const hours = Math.floor(remainingTime / (1000 * 60 * 60));
+        const minutes = Math.floor((remainingTime % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((remainingTime % (1000 * 60)) / 1000);
+
+        timerElement.innerText = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        if (remainingTime === 0) {
+          clearInterval(timerInterval);
+          timerElement.innerText = 'Timer expired!';
+
+          calculateAverage(randomNumber, decodeHtmlEntities('<%= roomData %>'), true);
+        }
+      }, 1000);
+    }
+
+
+    function calculateAverageOrMedian(sequence, timerExpired) {
 
       const flattenedSequence = sequence.flat();
 
+      const filteredValuesWithVoteRemoved = flattenedSequence.filter(value => value !== '?' && value !== "🍵" && value !== "SpectatorEntity" && value !== "🕵️");
+
       const filteredValues = flattenedSequence.filter(value => value !== '?' && value !== "🍵" && value !== "SpectatorEntity" && value !== "🕵️");
 
-      console.log("the calculation related array :  ", filteredValues);
       const allInteger = filteredValues.every(value => !isNaN(parseInt(value, 10)));
 
       if (allInteger) {
@@ -516,10 +551,6 @@
         return "No average";
       }
     }
-
-
-
-
 
     document.addEventListener('DOMContentLoaded', () => {
       const adminMessageForm = document.getElementById('adminMessageForm');
@@ -537,12 +568,29 @@
         const minutes = parseInt(document.getElementById('minuteInput').value);
         const seconds = parseInt(document.getElementById('secondInput').value);
 
-        const timerValue = (hours * 3600) + (minutes * 60) + seconds;
-        const currentTime = new Date().toLocaleString();
+        const timerPrintValue = (hours * 3600) + (minutes * 60) + seconds;
+        const currentPrintTime = new Date().toLocaleString();
 
-        console.log("Timer Value:", timerValue);
-        console.log("Current Timestamp:", currentTime);
+        console.log("Timer Value:", timerPrintValue);
+        console.log("Current Timestamp:", currentPrintTime);
+        // remove all above
+
+
+        // Get the timestamp and timer value
+        const timestamp = Date.now(); // Current timestamp
+        const timerValue = parseInt(document.getElementById('hourInput').value) * 3600 + parseInt(document.getElementById('minuteInput').value) * 60 + parseInt(document.getElementById('secondInput').value);
+
+        // Check if the checkbox is toggled and timer value is set
+        const toggleTimerCheckbox = document.getElementById('toggleTimer');
+        const isChecked = toggleTimerCheckbox.checked;
+
+        if (isChecked && timerValue > 0) {
+          // Start the countdown timer
+          console.log("isChecked : ", isChecked, "and timerValue : ", timerValue);
+          timerIntervalId = startCountdownTimer('countdownTimer', timestamp, timerValue);
+        }
         //TODO:
+
 
         try {
           const response = await fetch('/send-admin-message', {
@@ -550,7 +598,15 @@
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ username: '<%= username %>', sequenceInput, description }),
+            body: JSON.stringify({
+              username: '<%= username %>',
+              sequenceInput,
+              description,
+              timerEnabled: isChecked,
+              timestamp: isChecked ? timestamp : 0,
+              timerValue: isChecked ? timerValue : 0
+            }
+            ), //TODO:
           });
 
           if (!response.ok) {
@@ -589,9 +645,7 @@
 
       switch (eventData.action) {
         case 'newJoiner':
-          console.log(`New joiner option`);
           if (eventData.url === decodeHtmlEntities('<%= roomData.room_url %>')) {
-            console.log(`New joiner: ${eventData.username}`);
 
             if (!roomData) {
               await new Promise(resolve => setTimeout(resolve, 4000));
@@ -603,16 +657,15 @@
               }
             }
 
-            console.log('Using updated roomData:', roomData);
           } else {
             console.log(`Not equal: ${eventData.url} and <%= roomData.room_url %>`);
           }
           break;
 
         case 'updateJoiners':
-          console.log(`Updating joiners structure for room: ${eventData.url}`);
-          console.log(`Room Creator: ${eventData.roomCreator}`);
-          console.log('Updated Joiners Structure:', eventData.joinersStructure);
+          // console.log(`Updating joiners structure for room: ${eventData.url}`);
+          // console.log(`Room Creator: ${eventData.roomCreator}`);
+          // console.log('Updated Joiners Structure:', eventData.joinersStructure);
 
           // Assign the latest value to the global variable
           joinedPeopleTemp = eventData.joinersStructure;
@@ -623,9 +676,9 @@
 
         case 'updateSequence':
           if (eventData.url === decodeHtmlEntities('<%= roomData.room_url %>')) {
-            console.log(`Updating sequence for room: ${eventData.url}`);
-            console.log(`Room Creator: ${eventData.roomCreator}`);
-            console.log('Updated Sequence:', eventData.sequence);
+            // console.log(`Updating sequence for room: ${eventData.url}`);
+            // console.log(`Room Creator: ${eventData.roomCreator}`);
+            // console.log('Updated Sequence:', eventData.sequence);
 
             updateSequence(eventData.sequence);
           }
@@ -637,7 +690,7 @@
     };
 
     function updateJoinersStructure(joinersStructure) {
-      console.log('Updated Joiners Structure in the function:', joinedPeopleTemp);
+      // console.log('Updated Joiners Structure in the function:', joinedPeopleTemp);
       const joinersList = document.getElementById('joinersList');
       joinersList.innerHTML = '';
 

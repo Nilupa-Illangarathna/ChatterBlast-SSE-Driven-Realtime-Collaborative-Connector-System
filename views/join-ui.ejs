@@ -36,7 +36,7 @@
     .tile-container {
       display: flex;
       flex-wrap: wrap;
-      margin: -20px;
+      margin: 20px;
     }
 
     .tile {
@@ -126,7 +126,7 @@
     .leaderboard-container {
       max-height: 500px;
     }
-    
+
     .leaderboard-container-overflow {
       overflow-y: auto;
     }
@@ -143,14 +143,29 @@
     form {
       display: none;
     }
+
+    .timer-container {
+      margin-top: 20px;
+    }
+
+    .timer-container label {
+      margin-right: 10px;
+    }
+
+    .timer-container input {
+      width: 60px;
+      margin-right: 10px;
+    }
   </style>
 </head>
 
 <body>
   <div class="left-container zoomed-out-container">
-    <h2>Welcome <%= username %>
-    </h2>
+    <h2>Welcome <%= username %></h2>
     <h1>Joiner Interface</h1>
+    <div id="countdownTimer" class="timer-container">
+      <!-- Countdown timer will be displayed here -->
+    </div>
 
     <div id="tileContainer" class="tile-container"></div>
   </div>
@@ -228,6 +243,17 @@
       //       // Check if the spectator state is true for any joiner
       // const spectator = joinedPeople.find(person => person.joinerName === username)?.spectator;
       populateDescription('<%= roomData.description %>');
+
+
+      const isChecked = decodeHtmlEntities('<%= roomData.timer_enabled %>')==="true";
+      const timestamp = decodeHtmlEntities('<%= roomData.timestamp %>');
+      const timerValue = decodeHtmlEntities('<%= roomData.timer_value %>');
+
+      if (isChecked && timerValue > 0) {
+        // Start the countdown timer
+        console.log("isChecked : ", isChecked, "and timerValue : ", timerValue);
+        timerIntervalId = startCountdownTimer('countdownTimer', timestamp, timerValue);
+      }
     }
 
     function populateLeaderboard() {
@@ -252,11 +278,46 @@
 
     function displayRandomNumber(getRandomNumber) {
       const randomNumberElement = document.getElementById('randomNumber');
-      randomNumberElement.innerText = `Random Number: ${getRandomNumber}`;
+      randomNumberElement.innerText = `Average : ${getRandomNumber}`;
     }
 
 
+    // TODO: timer reusable
+    function startCountdownTimer(timerId, timestamp, timerValue) {
+      const timerElement = document.getElementById(timerId);
+      console.log("In Function in Timestamp:", timestamp);
+      console.log("In Function in timerValue:", timerValue);
 
+      const currentTimestamp = new Date().getTime();
+      console.log("Current Timestamp:", currentTimestamp);
+
+      const timeGap = currentTimestamp - timestamp;
+
+      console.log(" timeGap:", timeGap);
+
+      const startTime = Math.max(timeGap, 0);
+
+      console.log("startTime:", startTime);
+
+      const targetTimestamp = timerValue * 1000;
+      console.log("targetTimestamp:", targetTimestamp);
+      const timerInterval = setInterval(() => {
+        const currentTimestampInterval = new Date().getTime();
+
+        const remainingTime = Math.max(targetTimestamp - startTime - (currentTimestampInterval - currentTimestamp), 0);
+        console.log("Remaining Time:", remainingTime);
+
+        const hours = Math.floor(remainingTime / (1000 * 60 * 60));
+        const minutes = Math.floor((remainingTime % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((remainingTime % (1000 * 60)) / 1000);
+
+        timerElement.innerText = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        if (remainingTime === 0) {
+          clearInterval(timerInterval);
+          timerElement.innerText = 'Timer expired!';
+        }
+      }, 1000);
+    }
 
     async function handleTileClick(tileContent, spectator) {
 
@@ -389,7 +450,7 @@
         row.innerHTML = `
         <td>${person.joinerName}</td>
         <td>${person.voted ? '✅' : '❌'}</td>
-        <td class="voted-value-column">${person.votedValue === "SpectatorEntity" ? "🕵️" : "person.votedValue"}</td>
+        <td class="voted-value-column">${person.votedValue === "SpectatorEntity" ? "🕵️" : person.voted ? person.votedValue : "⛔"}</td>
     `;
         leaderboardBody.appendChild(row);
       });
@@ -415,7 +476,7 @@
         row.innerHTML = `
         <td>${person.joinerName}</td>
         <td>${person.voted ? '✅' : '❌'}</td>
-        <td>${person.votedValue === "SpectatorEntity" ? "🕵️" : "person.votedValue"}</td>
+        <td>${person.votedValue === "SpectatorEntity" ? "🕵️" : person.votedValue}</td>
     `;
         leaderboardBody.appendChild(row);
       });

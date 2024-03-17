@@ -272,6 +272,22 @@ app.post('/send-admin-message', async (req, res) => {
   try {
     const { username, sequenceInput } = req.body;
     const description = req.body.description;
+    const timerEnabled = req.body.timerEnabled;
+    const timestamp = req.body.timestamp;
+    const timerValue = req.body.timerValue;
+
+    // Convert string 'true'/'false' to boolean
+    const isEnabled = timerEnabled == 'true'? true: false;
+
+    // Convert string timestamp to Date object
+    const parsedTimestamp = parseInt(timestamp);
+
+    // Convert string timerValue to integer
+    const parsedTimerValue = parseInt(timerValue);
+
+    console.log("send-admin-message : ", timerEnabled);
+    console.log("send-admin-message : ", parsedTimestamp);
+    console.log("send-admin-message : ", parsedTimerValue);
 
     const { data: existingRoom, error: fetchError } = await supabase
       .from('rooms')
@@ -287,7 +303,7 @@ app.post('/send-admin-message', async (req, res) => {
 
     const { data: updatedRoom, updateError } = await supabase
       .from('rooms')
-      .update({ sequence: updatedSequence, description: description })
+      .update({ sequence: updatedSequence, description: description, timer_enabled: timerEnabled, timestamp: parsedTimestamp, timer_value: parsedTimerValue })
       .eq('room_creator_username', username)
       .single();
 
