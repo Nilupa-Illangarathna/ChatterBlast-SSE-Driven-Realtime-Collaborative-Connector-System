@@ -98,13 +98,14 @@ app.get('/join-ui/:username', async (req, res) => {
       throw new Error(`Error fetching room data: ${roomError.message}`);
     }
 
-    res.render('join-ui', { username, roomData ,description: roomData.description});
+    res.render('join-ui', { username, roomData, description: roomData.description });
   } catch (error) {
     console.error(error);
     res.status(500).send(`Error: ${error.message}`);
   }
 });
 
+// post methods
 app.post('/create-room', async (req, res) => {
   const { username } = req.body;
 
@@ -164,19 +165,19 @@ app.post('/join-room', async (req, res) => {
           action: 'newJoiner',
           username,
           url,
-          spectator: joinersData[joinerKey].spectator,  // Add this line
+          spectator: joinersData[joinerKey].spectator,
         });
       });
-      
+
     } else {
       const joinerKey = `${username}`;
 
       joinersData[joinerKey] = {
         joined_at: new Date().toISOString(),
         messages: [],
-        spectator: false,  // Add this line
+        spectator: false,
       };
-      
+
 
       const { data: updatedRoom, updateError } = await supabase
         .from('rooms')
@@ -195,7 +196,7 @@ app.post('/join-room', async (req, res) => {
         url: url,
         roomCreator: joinersData.room_creator_username,
       });
-      
+
 
       res.render('join-ui', { username, userMessages: [], roomData });
 
@@ -204,10 +205,10 @@ app.post('/join-room', async (req, res) => {
           action: 'newJoiner',
           username,
           url,
-          spectator: joinersData[joinerKey].spectator,  // Add this line
+          spectator: joinersData[joinerKey].spectator,
         });
       });
-      
+
 
 
     }
@@ -236,7 +237,7 @@ app.post('/send-join-message', async (req, res) => {
     const joinersData = JSON.parse(roomDataFromSupabase.joiners);
 
     if (joinersData.hasOwnProperty(username)) {
-      joinersData[username].messages.push(joinMessage);
+      joinersData[username].messages[0] = joinMessage;
 
       const { data: updatedRoom, updateError } = await supabase
         .from('rooms')
@@ -270,7 +271,7 @@ app.post('/send-join-message', async (req, res) => {
 app.post('/send-admin-message', async (req, res) => {
   try {
     const { username, sequenceInput } = req.body;
-    const description = req.body.description; // New
+    const description = req.body.description;
 
     const { data: existingRoom, error: fetchError } = await supabase
       .from('rooms')
@@ -286,7 +287,7 @@ app.post('/send-admin-message', async (req, res) => {
 
     const { data: updatedRoom, updateError } = await supabase
       .from('rooms')
-      .update({ sequence: updatedSequence, description: description }) // Update to include description
+      .update({ sequence: updatedSequence, description: description })
       .eq('room_creator_username', username)
       .single();
 
@@ -316,51 +317,6 @@ app.post('/send-admin-message', async (req, res) => {
   }
 });
 
-
-
-function createJoinersStructure(joinersData) {
-  return Object.keys(joinersData).map((joinerKey) => {
-    const joiner = joinersData[joinerKey];
-    return {
-      joinerName: joinerKey,
-      joinerId: joinerKey.split('-')[1],
-      voted: joiner.messages.length > 0,
-      votedValue: joiner.messages.length > 0 ? joiner.messages[joiner.messages.length - 1] : '',
-      spectator: joiner.spectator,  // Add this line
-    };
-  });
-}
-
-
-function broadcastToClients(data) {
-  sseClients.forEach(client => {
-    client.sseSend(data);
-  });
-}
-
-async function createTableIfNotExists(table_name) {
-  const query = `
-    CREATE TABLE IF NOT EXISTS ${table_name} (
-      id SERIAL PRIMARY KEY,
-      username TEXT NOT NULL,
-      message TEXT NOT NULL,
-      description TEXT
-    )`;
-
-  await supabase.rpc('create_new_table', { table_name: table_name });
-}
-
-
-async function checkTableExists(table_name) {
-  const { data, error } = await supabase
-    .from('rooms')
-    .select()
-    .eq('room_name', table_name)
-    .single();
-
-  return data !== null;
-}
-
 app.post('/send-message', async (req, res) => {
   const { username, message } = req.body;
 
@@ -377,24 +333,96 @@ app.post('/send-message', async (req, res) => {
   res.redirect(`/admin-ui/${username}`);
 });
 
-// Add this route to the server code
-app.post('/broadcast-data', (req, res) => {
+app.post('/toggle-spectator', async (req, res) => {
+  const { joiner_Name, is_Checked, roomUrl } = req.body;
+  joiner_Name
+  console.log(`Received toggle-spectator message from joiner_Name: ${joiner_Name}`);
+  console.log(`Received toggle-spectator message from is_Checked: ${is_Checked}`);
+  console.log(`Received toggle-spectator message from roomUrl: ${roomUrl}`);
+
+  try {
+    const { data: roomDataFromSupabase, error: roomError } = await supabase
+      .from('rooms')
+      .select()
+      .eq('room_url', roomUrl)
+      .single();
+
+    if (roomError || !roomDataFromSupabase) {
+      throw new Error(`Error fetching room data from Supabase: ${roomError?.message || 'Data not found'}`);
+    }
+
+    const joinersData = JSON.parse(roomDataFromSupabase.joiners);
+
+    console.log("roomDataFromSupabase : ", joinersData);
+
+    if (joinersData.hasOwnProperty(joiner_Name)) {
+      joinersData[joiner_Name].spectator = is_Checked;
+      if(is_Checked){
+        joinersData[joiner_Name].messages = "SpectatorEntity";
+      }
+
+      const { data: updatedRoom, updateError } = await supabase
+        .from('rooms')
+        .update({ joiners: JSON.stringify(joinersData) })
+        .eq('room_url', roomUrl)
+        .single();
+
+      if (updateError) {
+        throw new Error(`Error updating room data in Supabase: ${updateError.message}`);
+      }
+
+      const updatedJoinersStructure = createJoinersStructure(joinersData);
+      broadcastToClients({
+        action: 'updateJoiners',
+        joinersStructure: updatedJoinersStructure,
+        url: roomDataFromSupabase.room_url,
+        roomCreator: roomDataFromSupabase.room_creator_username,
+      });
+
+      res.render('join-ui', { username, userMessages: joinersData[username].messages, roomData: roomDataFromSupabase });
+
+    } else {
+      throw new Error(`User ${joiner_Name} not found in joinersData`);
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error toggling spectator state');
+  }
+});
+
+app.post('/broadcast-data', async (req, res) => {
+
   try {
     const { randomNumber, roomData, joinedPeople } = req.body;
 
-    // Print the received data on the server CLI
+    const { data: roomDataFromSupabase, error: roomError } = await supabase
+      .from('rooms')
+      .select()
+      .eq('room_url', roomData)
+      .single();
+
+    if (roomError || !roomDataFromSupabase) {
+      throw new Error(`Error fetching room data from Supabase: ${roomError?.message || 'Data not found'}`);
+    }
+
+    const joinersData = JSON.parse(roomDataFromSupabase.joiners);
+
+    console.log("roomDataFromSupabase : ", joinersData);
+
     console.log(`Received message from admin: ${randomNumber}`);
     console.log('Received room data:', roomData);
-    console.log('Received joined people data:', joinedPeople);
+    console.log('Received joined people data:', joinersData);
 
-   broadcastToClients({
-      action: 'adminEvent', // Add a new action type for admin events
+    const updatedJoinersStructure = createJoinersStructure(joinersData);
+    console.log('Created joined people data:', updatedJoinersStructure);
+    broadcastToClients({
+      action: 'adminEvent',
       randomNumber: randomNumber,
       roomData: roomData,
-      joinedPeople: joinedPeople,
+      joinedPeople: updatedJoinersStructure,
     });
     console.log('adminEvent Broadcassted');
-    
+
     res.status(200).send('Data received successfully.');
   } catch (error) {
     console.error('Error handling /broadcast-data:', error);
@@ -402,6 +430,50 @@ app.post('/broadcast-data', (req, res) => {
   }
 });
 
+
+// Functions
+function createJoinersStructure(joinersData) {
+  return Object.keys(joinersData).map((joinerKey) => {
+    const joiner = joinersData[joinerKey];
+    console.log(joiner.messages[joiner.messages.length - 1]);
+    return {
+      joinerName: joinerKey,
+      joinerId: joinerKey.split('-')[1],
+      voted: joiner.messages.length > 0,
+      votedValue: joiner.messages.length > 0 ? joiner.messages : '',
+      spectator: joiner.spectator,
+    };
+  });
+}
+
+function broadcastToClients(data) {
+  sseClients.forEach(client => {
+    client.sseSend(data);
+  });
+}
+
+// Asunc Functions
+async function createTableIfNotExists(table_name) {
+  const query = `
+    CREATE TABLE IF NOT EXISTS ${table_name} (
+      id SERIAL PRIMARY KEY,
+      username TEXT NOT NULL,
+      message TEXT NOT NULL,
+      description TEXT
+    )`;
+
+  await supabase.rpc('create_new_table', { table_name: table_name });
+}
+
+async function checkTableExists(table_name) {
+  const { data, error } = await supabase
+    .from('rooms')
+    .select()
+    .eq('room_name', table_name)
+    .single();
+
+  return data !== null;
+}
 
 server.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
