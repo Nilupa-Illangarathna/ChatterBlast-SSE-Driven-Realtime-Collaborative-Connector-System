@@ -10,18 +10,9 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet"
     integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
   <style>
-    /* Apply eye-catching and adaptable font styles */
-    .zoomed-out-container {
-      zoom: 0.8;
-    }
-
     body {
       background-color: #928888b0;
       display: flex;
-      font-family: Arial, sans-serif;
-      /* Use a widely available font family */
-      color: #333;
-      /* Set a default text color */
     }
 
     .left-container {
@@ -39,7 +30,7 @@
     .tile-container {
       display: flex;
       flex-wrap: wrap;
-      margin: 20px;
+      margin: -20px;
     }
 
     .tile {
@@ -59,8 +50,6 @@
       box-shadow: 0 2px 6px 0 rgba(0, 0, 0, 0.26);
       font-size: 1.5em;
       padding: 24px;
-      font-weight: bold;
-      /* Make the font bold */
     }
 
     .tile:not(.clickable) {
@@ -87,8 +76,6 @@
 
     .input-container input {
       margin-right: 10px;
-      font-size: 1em;
-      /* Adjust input font size */
     }
 
     .small-tile {
@@ -107,8 +94,6 @@
     .right-container .copy-link-button {
       margin-bottom: 20px;
       font-size: 1.2em;
-      font-weight: bold;
-      /* Make button text bold */
     }
 
     .leaderboard {
@@ -140,24 +125,11 @@
     .voted-value-column {
       display: none;
     }
-
-    .timer-container {
-      margin-top: 20px;
-    }
-
-    .timer-container label {
-      margin-right: 10px;
-    }
-
-    .timer-container input {
-      width: 60px;
-      margin-right: 10px;
-    }
   </style>
 </head>
 
 <body>
-  <div class="left-container zoomed-out-container">
+  <div class="left-container">
     <h2>Welcome <%= username %>
     </h2>
     <h1>Admin User Interface</h1>
@@ -183,32 +155,18 @@
     </div>
 
 
-    <div class="input-container timer-container">
+    <div class="input-container">
       <div class="input-container">
-        <label for="toggleTimer">Enable Timer:</label>
-        <label class="switch">
-          <input type="checkbox" id="toggleTimer" onchange="toggleTimer()">
-          <span class="slider round"></span>
-        </label>
+        <label for="toggleTimer">Enable Timer: <input type="checkbox" id="toggleTimer" onchange="toggleTimer()"></label>
       </div>
-      <div class="MuiFormControl-root MuiTextField-root input-container">
-        <label for="hourInput">Hours:</label>
-        <input type="number" id="hourInput" class="form-control" min="0" value="0">
-      </div>
-      <div class="MuiFormControl-root MuiTextField-root input-container">
-        <label for="minuteInput">Minutes:</label>
-        <input type="number" id="minuteInput" class="form-control" min="0" max="59" value="0">
-      </div>
-      <div class="MuiFormControl-root MuiTextField-root input-container">
-        <label for="secondInput">Seconds:</label>
-        <input type="number" id="secondInput" class="form-control" min="0" max="59" value="0">
+
+      <div class="input-container">
+        <label for="timerValue">Timer Value (in seconds): <input type="number" id="timerValue" class="form-control"
+            disabled></label>
       </div>
     </div>
 
 
-    <div id="countdownTimer" class="timer-container">
-      <!-- Countdown timer will be displayed here -->
-    </div>
 
 
     <div id="tileContainer" class="tile-container">
@@ -216,13 +174,13 @@
   </div>
 
   <div class="right-container">
-    <div class="leaderboard-container zoomed-out-container">
+    <div class="leaderboard-container">
       <table class="leaderboard table table-striped" id="leaderboard">
         <thead>
           <tr>
             <th>Joiner Name</th>
             <th>Voted</th>
-            <th>Spectator</th>
+            <th>Spectator</th> <!-- Add this line -->
             <th class="voted-value-column">Voted Value</th>
           </tr>
         </thead>
@@ -230,13 +188,11 @@
       </table>
     </div>
     <form id="adminMessageForm" action="/send-admin-message" method="POST">
-      <button type="submit" class="btn btn-primary zoomed-out-container" onclick="submitForm()" id="submitButton"
-        disabled>Submit</button>
+      <button type="submit" class="btn btn-primary" onclick="submitForm()" id="submitButton" disabled>Submit</button>
     </form>
 
-    <button class="btn btn-success calculate-button zoomed-out-container"
-      onclick="calculateAverage(randomNumber, '<%= roomData %>', false)" id="calculateButton"
-      disabled>Calculate</button>
+    <button class="btn btn-success calculate-button" onclick="calculateAverage(randomNumber, '<%= roomData %>')"
+      id="calculateButton" disabled>Calculate</button>
     <div class="random-number" id="randomNumber"></div>
   </div>
 
@@ -277,6 +233,7 @@
       const inputValue = document.getElementById('sequenceInput').value;
       const description = document.getElementById('descriptionInput').value;
 
+
       switch (type) {
         case 'tShirtSizes':
           updatedSequence = tShirtSizes;
@@ -300,13 +257,9 @@
           updatedSequence = [];
       }
 
-      // Add '?' and '🍵' only if they are not already present in the sequence
-      if (!updatedSequence.includes('?')) {
-        updatedSequence.push('?');
-      }
-      if (!updatedSequence.includes('🍵')) {
-        updatedSequence.push('🍵');
-      }
+      // Add two additional tiles with '?' and '🍵'
+      updatedSequence.push('?');
+      updatedSequence.push('🍵');
 
       const tileContainer = document.getElementById('tileContainer');
       tileContainer.innerHTML = '';
@@ -321,10 +274,10 @@
       });
 
       document.getElementById('submitButton').disabled = !canEnableSubmitButton() || description.trim() === '';
+      // submitButton.disabled = !canEnableSubmitButton() || description.trim() === '';
       document.getElementById('calculateButton').disabled = true;
       document.getElementById('copyLinkButton').disabled = !canEnableCopyLinkButton();
     }
-
 
 
     function updateLeaderboard(shouldRender = false, joinedPeople = []) {
@@ -338,6 +291,7 @@
       const leaderboard = document.getElementById('leaderboard');
       const leaderboardBody = leaderboard.querySelector('tbody');
 
+      console.log(joinedPeople + " found");
       leaderboardBody.innerHTML = '';
 
       joinedPeople.forEach(person => {
@@ -351,7 +305,7 @@
           <span class="slider round"></span>
         </label>
       </td>
-      <td class="voted-value-column">${person.votedValue === "SpectatorEntity" ? "🕵️" : person.voted ? person.votedValue : "⛔"}</td>
+      <td class="voted-value-column">${person.votedValue}</td>
     `;
         leaderboardBody.appendChild(row);
       });
@@ -361,24 +315,27 @@
 
     function toggleSpectator(joinerName, isChecked) {
 
-      fetch('/toggle-spectator', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        // body: JSON.stringify({ joinerName, isChecked, roomUrl, username }), // Include username in the request body
-        body: JSON.stringify({ joiner_Name: joinerName, is_Checked: isChecked, roomUrl: decodeHtmlEntities('<%= roomData.room_url %>') }),
-      })
-        .then(response => {
-          if (!response.ok) {
-            throw new Error(`Error toggling spectator state: ${response.statusText}`);
-          }
-          console.log(`Spectator state toggled successfully for ${joinerName}`);
-        })
-        .catch(error => {
-          console.error(`Error toggling spectator state: ${error.message}`);
-        });
+console.log('Received room data joinerName:', joinerName);
+console.log('Received room data isChecked:', isChecked);
+
+fetch('/toggle-spectator', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  // body: JSON.stringify({ joinerName, isChecked, roomUrl, username }), // Include username in the request body
+  body: JSON.stringify({ joiner_Name: joinerName, is_Checked:isChecked , roomUrl: decodeHtmlEntities('<%= roomData.room_url %>')}),
+})
+  .then(response => {
+    if (!response.ok) {
+      throw new Error(`Error toggling spectator state: ${response.statusText}`);
     }
+    console.log(`Spectator state toggled successfully for ${joinerName}`);
+  })
+  .catch(error => {
+    console.error(`Error toggling spectator state: ${error.message}`);
+  });
+}
 
 
 
@@ -436,7 +393,7 @@
 
 
     // admin-ui.ejs
-    function calculateAverage(randomNumber, roomData, timerExpired = false) {
+    function calculateAverage(randomNumber, roomData) {
 
       // Show the Voted Value column when the calculate button is pressed
       const votedValueColumns = document.querySelectorAll('.voted-value-column');
@@ -446,13 +403,16 @@
 
       // Show the random number
       const randomNumberElement = document.getElementById('randomNumber');
-
-      const averageNumber = calculateAverageOrMedian(getVotedValuesArray(), timerExpired);
-
-      randomNumberElement.innerText = `Average: ${averageNumber}`;
+      randomNumberElement.innerText = `Random Number: ${calculateAverageOrMedian(getVotedValuesArray())}`;
 
       // Disable the calculate button after it's pressed
       document.getElementById('calculateButton').disabled = true;
+
+      console.log("Sending data to the server...");
+
+      console.log(`Received message from admin: ${calculateAverageOrMedian(getVotedValuesArray())}`);
+      console.log('Received room data:', decodeHtmlEntities('<%= roomData.room_url %>'));
+      console.log('Received joined people data:', joinedPeopleTemp);
 
       // Send data to the server
       fetch('/broadcast-data', {
@@ -460,7 +420,7 @@
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ randomNumber: averageNumber, roomData: decodeHtmlEntities('<%= roomData.room_url %>'), joinedPeople: joinedPeopleTemp }),
+        body: JSON.stringify({ randomNumber: calculateAverageOrMedian(getVotedValuesArray()), roomData: decodeHtmlEntities('<%= roomData.room_url %>'), joinedPeople: joinedPeopleTemp }),
       })
         .then(response => {
           if (!response.ok) {
@@ -490,52 +450,10 @@
       return joinedPeople;
     }
 
-    // TODO: timer reusable
-    function startCountdownTimer(timerId, timestamp, timerValue) {
-      const timerElement = document.getElementById(timerId);
-      console.log("In Function in Timestamp:", timestamp);
-      console.log("In Function in timerValue:", timerValue);
 
-      const currentTimestamp = new Date().getTime();
-      console.log("Current Timestamp:", currentTimestamp);
+    function calculateAverageOrMedian(sequence) {
 
-      const timeGap = currentTimestamp - timestamp;
-
-      console.log(" timeGap:", timeGap);
-
-      const startTime = Math.max(timeGap, 0);
-
-      console.log("startTime:", startTime);
-
-      const targetTimestamp = timerValue * 1000;
-      const timerInterval = setInterval(() => {
-        const currentTimestampInterval = new Date().getTime();
-
-        const remainingTime = Math.max(targetTimestamp - startTime - (currentTimestampInterval - currentTimestamp), 0);
-        console.log("Remaining Time:", remainingTime);
-
-        const hours = Math.floor(remainingTime / (1000 * 60 * 60));
-        const minutes = Math.floor((remainingTime % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((remainingTime % (1000 * 60)) / 1000);
-
-        timerElement.innerText = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-        if (remainingTime === 0) {
-          clearInterval(timerInterval);
-          timerElement.innerText = 'Timer expired!';
-
-          calculateAverage(randomNumber, decodeHtmlEntities('<%= roomData %>'), true);
-        }
-      }, 1000);
-    }
-
-
-    function calculateAverageOrMedian(sequence, timerExpired) {
-
-      const flattenedSequence = sequence.flat();
-
-      const filteredValuesWithVoteRemoved = flattenedSequence.filter(value => value !== '?' && value !== "🍵" && value !== "SpectatorEntity" && value !== "🕵️");
-
-      const filteredValues = flattenedSequence.filter(value => value !== '?' && value !== "🍵" && value !== "SpectatorEntity" && value !== "🕵️");
+      const filteredValues = sequence.filter(value => value !== '?' && value !== '🍵');
 
       const allInteger = filteredValues.every(value => !isNaN(parseInt(value, 10)));
 
@@ -543,7 +461,7 @@
         const numericArray = filteredValues.map(value => parseInt(value, 10));
 
         const sum = numericArray.reduce((acc, value) => acc + value, 0);
-        const average = sum / filteredValues.length;
+        const average = sum / sequence.length;
 
         return average;
       } else {
@@ -551,6 +469,10 @@
         return "No average";
       }
     }
+
+
+
+
 
     document.addEventListener('DOMContentLoaded', () => {
       const adminMessageForm = document.getElementById('adminMessageForm');
@@ -562,51 +484,13 @@
         const sequenceInput = getCurrentSequence().join(', ');
         const description = getCurrentDescription();
 
-        // TODO:
-        // Inside the submitForm function
-        const hours = parseInt(document.getElementById('hourInput').value);
-        const minutes = parseInt(document.getElementById('minuteInput').value);
-        const seconds = parseInt(document.getElementById('secondInput').value);
-
-        const timerPrintValue = (hours * 3600) + (minutes * 60) + seconds;
-        const currentPrintTime = new Date().toLocaleString();
-
-        console.log("Timer Value:", timerPrintValue);
-        console.log("Current Timestamp:", currentPrintTime);
-        // remove all above
-
-
-        // Get the timestamp and timer value
-        const timestamp = Date.now(); // Current timestamp
-        const timerValue = parseInt(document.getElementById('hourInput').value) * 3600 + parseInt(document.getElementById('minuteInput').value) * 60 + parseInt(document.getElementById('secondInput').value);
-
-        // Check if the checkbox is toggled and timer value is set
-        const toggleTimerCheckbox = document.getElementById('toggleTimer');
-        const isChecked = toggleTimerCheckbox.checked;
-
-        if (isChecked && timerValue > 0) {
-          // Start the countdown timer
-          console.log("isChecked : ", isChecked, "and timerValue : ", timerValue);
-          timerIntervalId = startCountdownTimer('countdownTimer', timestamp, timerValue);
-        }
-        //TODO:
-
-
         try {
           const response = await fetch('/send-admin-message', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({
-              username: '<%= username %>',
-              sequenceInput,
-              description,
-              timerEnabled: isChecked,
-              timestamp: isChecked ? timestamp : 0,
-              timerValue: isChecked ? timerValue : 0
-            }
-            ), //TODO:
+            body: JSON.stringify({ username: '<%= username %>', sequenceInput, description }),
           });
 
           if (!response.ok) {
@@ -645,7 +529,9 @@
 
       switch (eventData.action) {
         case 'newJoiner':
+          console.log(`New joiner option`);
           if (eventData.url === decodeHtmlEntities('<%= roomData.room_url %>')) {
+            console.log(`New joiner: ${eventData.username}`);
 
             if (!roomData) {
               await new Promise(resolve => setTimeout(resolve, 4000));
@@ -657,15 +543,16 @@
               }
             }
 
+            console.log('Using updated roomData:', roomData);
           } else {
             console.log(`Not equal: ${eventData.url} and <%= roomData.room_url %>`);
           }
           break;
 
         case 'updateJoiners':
-          // console.log(`Updating joiners structure for room: ${eventData.url}`);
-          // console.log(`Room Creator: ${eventData.roomCreator}`);
-          // console.log('Updated Joiners Structure:', eventData.joinersStructure);
+          console.log(`Updating joiners structure for room: ${eventData.url}`);
+          console.log(`Room Creator: ${eventData.roomCreator}`);
+          console.log('Updated Joiners Structure:', eventData.joinersStructure);
 
           // Assign the latest value to the global variable
           joinedPeopleTemp = eventData.joinersStructure;
@@ -676,9 +563,9 @@
 
         case 'updateSequence':
           if (eventData.url === decodeHtmlEntities('<%= roomData.room_url %>')) {
-            // console.log(`Updating sequence for room: ${eventData.url}`);
-            // console.log(`Room Creator: ${eventData.roomCreator}`);
-            // console.log('Updated Sequence:', eventData.sequence);
+            console.log(`Updating sequence for room: ${eventData.url}`);
+            console.log(`Room Creator: ${eventData.roomCreator}`);
+            console.log('Updated Sequence:', eventData.sequence);
 
             updateSequence(eventData.sequence);
           }
@@ -690,7 +577,7 @@
     };
 
     function updateJoinersStructure(joinersStructure) {
-      // console.log('Updated Joiners Structure in the function:', joinedPeopleTemp);
+      console.log('Updated Joiners Structure in the function:', joinedPeopleTemp);
       const joinersList = document.getElementById('joinersList');
       joinersList.innerHTML = '';
 
