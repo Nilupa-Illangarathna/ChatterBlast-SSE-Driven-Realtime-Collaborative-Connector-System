@@ -236,7 +236,7 @@ app.post('/send-join-message', async (req, res) => {
     const joinersData = JSON.parse(roomDataFromSupabase.joiners);
 
     if (joinersData.hasOwnProperty(username)) {
-      joinersData[username].messages.push(joinMessage);
+      joinersData[username].messages[0] = joinMessage;
 
       const { data: updatedRoom, updateError } = await supabase
         .from('rooms')
@@ -321,11 +321,12 @@ app.post('/send-admin-message', async (req, res) => {
 function createJoinersStructure(joinersData) {
   return Object.keys(joinersData).map((joinerKey) => {
     const joiner = joinersData[joinerKey];
+    console.log(joiner.messages[joiner.messages.length - 1]);
     return {
       joinerName: joinerKey,
       joinerId: joinerKey.split('-')[1],
       voted: joiner.messages.length > 0,
-      votedValue: joiner.messages.length > 0 ? joiner.messages[joiner.messages.length - 1] : '',
+      votedValue: joiner.messages.length > 0 ? joiner.messages : '',
       spectator: joiner.spectator,  // Add this line
     };
   });
@@ -452,10 +453,13 @@ app.post('/toggle-spectator', async (req, res) => {
 
     const joinersData = JSON.parse(roomDataFromSupabase.joiners);
 
-    console.log("roomDataFromSupabase : " , joinersData);
+    console.log("roomDataFromSupabase : ", joinersData);
 
     if (joinersData.hasOwnProperty(joiner_Name)) {
       joinersData[joiner_Name].spectator = is_Checked;
+      if(is_Checked){
+        joinersData[joiner_Name].messages = "SpectatorEntity";
+      }
 
       const { data: updatedRoom, updateError } = await supabase
         .from('rooms')
@@ -508,20 +512,39 @@ app.post('/toggle-spectator', async (req, res) => {
 
 
 // Add this route to the server code
-app.post('/broadcast-data', (req, res) => {
+app.post('/broadcast-data', async (req, res) => {
+
   try {
     const { randomNumber, roomData, joinedPeople } = req.body;
 
-    // Print the received data on the server CLI
+    const { data: roomDataFromSupabase, error: roomError } = await supabase
+      .from('rooms')
+      .select()
+      .eq('room_url', roomData) //roomData means url
+      .single();
+
+    if (roomError || !roomDataFromSupabase) {
+      throw new Error(`Error fetching room data from Supabase: ${roomError?.message || 'Data not found'}`);
+    }
+
+    const joinersData = JSON.parse(roomDataFromSupabase.joiners);
+
+    console.log("roomDataFromSupabase : ", joinersData);
+
     console.log(`Received message from admin: ${randomNumber}`);
     console.log('Received room data:', roomData);
-    console.log('Received joined people data:', joinedPeople);
+    console.log('Received joined people data:', joinersData);
 
+
+
+
+    const updatedJoinersStructure = createJoinersStructure(joinersData);
+    console.log('Created joined people data:', updatedJoinersStructure);
     broadcastToClients({
       action: 'adminEvent', // Add a new action type for admin events
       randomNumber: randomNumber,
       roomData: roomData,
-      joinedPeople: joinedPeople,
+      joinedPeople: updatedJoinersStructure,
     });
     console.log('adminEvent Broadcassted');
 
@@ -530,6 +553,46 @@ app.post('/broadcast-data', (req, res) => {
     console.error('Error handling /broadcast-data:', error);
     res.status(500).send('Internal server error.');
   }
+
+
+
+
+
+
+  // try {
+  //   const { randomNumber, roomData, joinedPeople } = req.body;
+
+
+
+  
+
+
+
+
+
+
+
+
+    
+  //   // Print the received data on the server CLI
+  //   console.log(`Received message from admin: ${randomNumber}`);
+  //   console.log('Received room data:', roomData);
+  //   console.log('Received joined people data:', joinedPeople);
+
+  //   const updatedJoinersStructure = createJoinersStructure(joinedPeople);
+  //   broadcastToClients({
+  //     action: 'adminEvent', // Add a new action type for admin events
+  //     randomNumber: randomNumber,
+  //     roomData: roomData,
+  //     joinedPeople: joinedPeople,
+  //   });
+  //   console.log('adminEvent Broadcassted');
+
+  //   res.status(200).send('Data received successfully.');
+  // } catch (error) {
+  //   console.error('Error handling /broadcast-data:', error);
+  //   res.status(500).send('Internal server error.');
+  // }
 });
 
 

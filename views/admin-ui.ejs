@@ -10,9 +10,18 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet"
     integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
   <style>
+    /* Apply eye-catching and adaptable font styles */
+    .zoomed-out-container {
+      zoom: 0.8;
+    }
+
     body {
       background-color: #928888b0;
       display: flex;
+      font-family: Arial, sans-serif;
+      /* Use a widely available font family */
+      color: #333;
+      /* Set a default text color */
     }
 
     .left-container {
@@ -50,6 +59,8 @@
       box-shadow: 0 2px 6px 0 rgba(0, 0, 0, 0.26);
       font-size: 1.5em;
       padding: 24px;
+      font-weight: bold;
+      /* Make the font bold */
     }
 
     .tile:not(.clickable) {
@@ -76,6 +87,8 @@
 
     .input-container input {
       margin-right: 10px;
+      font-size: 1em;
+      /* Adjust input font size */
     }
 
     .small-tile {
@@ -94,6 +107,8 @@
     .right-container .copy-link-button {
       margin-bottom: 20px;
       font-size: 1.2em;
+      font-weight: bold;
+      /* Make button text bold */
     }
 
     .leaderboard {
@@ -129,7 +144,7 @@
 </head>
 
 <body>
-  <div class="left-container">
+  <div class="left-container zoomed-out-container">
     <h2>Welcome <%= username %>
     </h2>
     <h1>Admin User Interface</h1>
@@ -174,7 +189,7 @@
   </div>
 
   <div class="right-container">
-    <div class="leaderboard-container">
+    <div class="leaderboard-container zoomed-out-container">
       <table class="leaderboard table table-striped" id="leaderboard">
         <thead>
           <tr>
@@ -188,11 +203,12 @@
       </table>
     </div>
     <form id="adminMessageForm" action="/send-admin-message" method="POST">
-      <button type="submit" class="btn btn-primary" onclick="submitForm()" id="submitButton" disabled>Submit</button>
+      <button type="submit" class="btn btn-primary zoomed-out-container" onclick="submitForm()" id="submitButton"
+        disabled>Submit</button>
     </form>
 
-    <button class="btn btn-success calculate-button" onclick="calculateAverage(randomNumber, '<%= roomData %>')"
-      id="calculateButton" disabled>Calculate</button>
+    <button class="btn btn-success calculate-button zoomed-out-container"
+      onclick="calculateAverage(randomNumber, '<%= roomData %>')" id="calculateButton" disabled>Calculate</button>
     <div class="random-number" id="randomNumber"></div>
   </div>
 
@@ -233,7 +249,6 @@
       const inputValue = document.getElementById('sequenceInput').value;
       const description = document.getElementById('descriptionInput').value;
 
-
       switch (type) {
         case 'tShirtSizes':
           updatedSequence = tShirtSizes;
@@ -257,9 +272,13 @@
           updatedSequence = [];
       }
 
-      // Add two additional tiles with '?' and '🍵'
-      updatedSequence.push('?');
-      updatedSequence.push('🍵');
+      // Add '?' and '🍵' only if they are not already present in the sequence
+      if (!updatedSequence.includes('?')) {
+        updatedSequence.push('?');
+      }
+      if (!updatedSequence.includes('🍵')) {
+        updatedSequence.push('🍵');
+      }
 
       const tileContainer = document.getElementById('tileContainer');
       tileContainer.innerHTML = '';
@@ -274,10 +293,10 @@
       });
 
       document.getElementById('submitButton').disabled = !canEnableSubmitButton() || description.trim() === '';
-      // submitButton.disabled = !canEnableSubmitButton() || description.trim() === '';
       document.getElementById('calculateButton').disabled = true;
       document.getElementById('copyLinkButton').disabled = !canEnableCopyLinkButton();
     }
+
 
 
     function updateLeaderboard(shouldRender = false, joinedPeople = []) {
@@ -305,7 +324,7 @@
           <span class="slider round"></span>
         </label>
       </td>
-      <td class="voted-value-column">${person.votedValue}</td>
+      <td class="voted-value-column">${person.votedValue === "SpectatorEntity" ? "🕵️" : person.votedValue}</td>
     `;
         leaderboardBody.appendChild(row);
       });
@@ -315,27 +334,27 @@
 
     function toggleSpectator(joinerName, isChecked) {
 
-console.log('Received room data joinerName:', joinerName);
-console.log('Received room data isChecked:', isChecked);
+      console.log('Received room data joinerName:', joinerName);
+      console.log('Received room data isChecked:', isChecked);
 
-fetch('/toggle-spectator', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  // body: JSON.stringify({ joinerName, isChecked, roomUrl, username }), // Include username in the request body
-  body: JSON.stringify({ joiner_Name: joinerName, is_Checked:isChecked , roomUrl: decodeHtmlEntities('<%= roomData.room_url %>')}),
-})
-  .then(response => {
-    if (!response.ok) {
-      throw new Error(`Error toggling spectator state: ${response.statusText}`);
+      fetch('/toggle-spectator', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        // body: JSON.stringify({ joinerName, isChecked, roomUrl, username }), // Include username in the request body
+        body: JSON.stringify({ joiner_Name: joinerName, is_Checked: isChecked, roomUrl: decodeHtmlEntities('<%= roomData.room_url %>') }),
+      })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`Error toggling spectator state: ${response.statusText}`);
+          }
+          console.log(`Spectator state toggled successfully for ${joinerName}`);
+        })
+        .catch(error => {
+          console.error(`Error toggling spectator state: ${error.message}`);
+        });
     }
-    console.log(`Spectator state toggled successfully for ${joinerName}`);
-  })
-  .catch(error => {
-    console.error(`Error toggling spectator state: ${error.message}`);
-  });
-}
 
 
 
@@ -453,15 +472,18 @@ fetch('/toggle-spectator', {
 
     function calculateAverageOrMedian(sequence) {
 
-      const filteredValues = sequence.filter(value => value !== '?' && value !== '🍵');
+      const flattenedSequence = sequence.flat();
 
+      const filteredValues = flattenedSequence.filter(value => value !== '?' && value !== "🍵" && value !== "SpectatorEntity" && value !== "🕵️");
+
+      console.log("the calculation related array :  ", filteredValues);
       const allInteger = filteredValues.every(value => !isNaN(parseInt(value, 10)));
 
       if (allInteger) {
         const numericArray = filteredValues.map(value => parseInt(value, 10));
 
         const sum = numericArray.reduce((acc, value) => acc + value, 0);
-        const average = sum / sequence.length;
+        const average = sum / filteredValues.length;
 
         return average;
       } else {
