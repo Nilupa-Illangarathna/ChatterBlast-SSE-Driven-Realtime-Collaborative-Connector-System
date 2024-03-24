@@ -125,6 +125,9 @@
 
     .leaderboard-container {
       max-height: 500px;
+    }
+    
+    .leaderboard-container-overflow {
       overflow-y: auto;
     }
 
@@ -153,12 +156,12 @@
   </div>
 
   <div class="right-container">
-    <div class="leaderboard-container zoomed-out-container">
+    <div class="zoomed-out-container">
       <div class="description-container ">
         <h3>Description</h3>
         <p id="descriptionText"></p>
       </div>
-      <table class="leaderboard table table-striped" id="leaderboard">
+      <table class="leaderboard-container-overflow leaderboard table table-striped" id="leaderboard">
         <thead>
           <tr>
             <th>Joiner Name</th>

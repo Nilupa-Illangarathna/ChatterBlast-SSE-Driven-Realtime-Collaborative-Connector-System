@@ -1,3 +1,4 @@
+
 <!-- views/admin-ui.ejs -->
 <!DOCTYPE html>
 <html lang="en">
@@ -140,6 +141,19 @@
     .voted-value-column {
       display: none;
     }
+
+    .timer-container {
+      margin-top: 20px;
+    }
+
+    .timer-container label {
+      margin-right: 10px;
+    }
+
+    .timer-container input {
+      width: 60px;
+      margin-right: 10px;
+    }
   </style>
 </head>
 
@@ -170,14 +184,25 @@
     </div>
 
 
-    <div class="input-container">
+    <div class="input-container timer-container">
       <div class="input-container">
-        <label for="toggleTimer">Enable Timer: <input type="checkbox" id="toggleTimer" onchange="toggleTimer()"></label>
+        <label for="toggleTimer">Enable Timer:</label>
+        <label class="switch">
+          <input type="checkbox" id="toggleTimer" onchange="toggleTimer()">
+          <span class="slider round"></span>
+        </label>
       </div>
-
-      <div class="input-container">
-        <label for="timerValue">Timer Value (in seconds): <input type="number" id="timerValue" class="form-control"
-            disabled></label>
+      <div class="MuiFormControl-root MuiTextField-root input-container">
+        <label for="hourInput">Hours:</label>
+        <input type="number" id="hourInput" class="form-control" min="0" value="0">
+      </div>
+      <div class="MuiFormControl-root MuiTextField-root input-container">
+        <label for="minuteInput">Minutes:</label>
+        <input type="number" id="minuteInput" class="form-control" min="0" max="59" value="0">
+      </div>
+      <div class="MuiFormControl-root MuiTextField-root input-container">
+        <label for="secondInput">Seconds:</label>
+        <input type="number" id="secondInput" class="form-control" min="0" max="59" value="0">
       </div>
     </div>
 
@@ -195,7 +220,7 @@
           <tr>
             <th>Joiner Name</th>
             <th>Voted</th>
-            <th>Spectator</th> <!-- Add this line -->
+            <th>Spectator</th>
             <th class="voted-value-column">Voted Value</th>
           </tr>
         </thead>
@@ -505,6 +530,19 @@
         const formData = new FormData(adminMessageForm);
         const sequenceInput = getCurrentSequence().join(', ');
         const description = getCurrentDescription();
+
+        // TODO:
+        // Inside the submitForm function
+        const hours = parseInt(document.getElementById('hourInput').value);
+        const minutes = parseInt(document.getElementById('minuteInput').value);
+        const seconds = parseInt(document.getElementById('secondInput').value);
+
+        const timerValue = (hours * 3600) + (minutes * 60) + seconds;
+        const currentTime = new Date().toLocaleString();
+
+        console.log("Timer Value:", timerValue);
+        console.log("Current Timestamp:", currentTime);
+        //TODO:
 
         try {
           const response = await fetch('/send-admin-message', {
