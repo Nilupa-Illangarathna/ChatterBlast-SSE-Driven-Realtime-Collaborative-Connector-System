@@ -4,6 +4,7 @@ const { createServer } = require('http');
 const { createClient } = require('@supabase/supabase-js');
 const { v4: uuidv4 } = require('uuid');
 const bodyParser = require('body-parser');
+const path = require('path');
 
 const app = express();
 const server = createServer(app);
@@ -16,7 +17,7 @@ const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 app.set('view engine', 'ejs');
-app.use(express.static('public'));
+app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.urlencoded({ extended: true }));
 
 const port = process.env.PORT || 3000;
@@ -103,6 +104,24 @@ app.get('/join-ui/:username', async (req, res) => {
     console.error(error);
     res.status(500).send(`Error: ${error.message}`);
   }
+});
+
+// Image gets
+// Define a route to serve the background image
+app.get('/init-background', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'init_background.svg')); // Adjust the path accordingly
+});
+
+app.get('/create-room-background', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'init_background.svg')); // Adjust the path accordingly
+});
+
+app.get('/admin-joiner-leaderboard-background', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'admin-joiner-leaderboard-background.png')); // Adjust the path accordingly
+});
+
+app.get('/admin-joiner-main-background', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'admin-joiner-main-background.png')); // Adjust the path accordingly
 });
 
 // post methods

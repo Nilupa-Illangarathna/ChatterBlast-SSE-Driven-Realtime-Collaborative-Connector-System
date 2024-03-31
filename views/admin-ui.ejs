@@ -16,7 +16,7 @@
     }
 
     body {
-      background-color: #928888b0;
+      background-color: #a5a2a2b0;
       display: flex;
       font-family: Arial, sans-serif;
       /* Use a widely available font family */
@@ -26,12 +26,33 @@
 
     .left-container {
       width: 70%;
-      padding: 40px;
+      position: relative;
+    }
+
+
+
+    .background-image-container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+
+    .background-image-container::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: url('/admin-joiner-main-background');
+      opacity: 0.5;
+      /* Adjust the opacity value as needed */
+      background-size: 100% 100%;
+      background-position: top;
     }
 
     .right-container {
       width: 30%;
-      padding: 40px;
       background-color: #fff;
       height: 100vh;
     }
@@ -40,6 +61,10 @@
       display: flex;
       flex-wrap: wrap;
       margin: 20px;
+    }
+
+    .padded {
+      padding: 40px;
     }
 
     .tile {
@@ -157,98 +182,105 @@
     .timer-text {
       margin-left: 4rem;
       margin-right: 4rem;
-  font-family: Arial, sans-serif; /* Change the font family */
-  font-size: 48px; /* Set the font size to be large */
-  font-weight: bold; /* Make the text bold */
-  color: #656363;
-}
+      font-family: Arial, sans-serif;
+      /* Change the font family */
+      font-size: 48px;
+      /* Set the font size to be large */
+      font-weight: bold;
+      /* Make the text bold */
+      color: #656363;
+    }
   </style>
 </head>
 
 <body>
-  <div class="left-container zoomed-out-container">
-    <h2>Welcome <%= username %>
-    </h2>
-    <h1>Admin User Interface</h1>
-    <p>Admin: <%= username %>
-    </p>
+  <div class="left-container"
+    style="background-image: url('/admin-joiner-main-background'); background-size: 100% 100%; background-position: top;">
+
+    <div class="padded zoomed-out-container">
+      <h2>Welcome <%= username %>
+      </h2>
+      <h1>Admin User Interface</h1>
+      <p>Admin: <%= username %>
+      </p>
 
 
-    <div class="btn-group" role="group" aria-label="Sequence Type">
-      <button type="button" class="btn btn-secondary" onclick="updateSequences('tShirtSizes')">T-Shirt</button>
-      <button type="button" class="btn btn-secondary" onclick="updateSequences('sequence1')">Seq 1</button>
-      <button type="button" class="btn btn-secondary" onclick="updateSequences('sequence2')">Seq 2</button>
-      <button type="button" class="btn btn-secondary" onclick="updateSequences('fibonacci')">Fibonacci</button>
-      <button type="button" class="btn btn-secondary" onclick="updateSequences('custom')">Custom</button>
-    </div>
+      <div class="btn-group" role="group" aria-label="Sequence Type">
+        <button type="button" class="btn btn-secondary" onclick="updateSequences('tShirtSizes')">T-Shirt</button>
+        <button type="button" class="btn btn-secondary" onclick="updateSequences('sequence1')">Seq 1</button>
+        <button type="button" class="btn btn-secondary" onclick="updateSequences('sequence2')">Seq 2</button>
+        <button type="button" class="btn btn-secondary" onclick="updateSequences('fibonacci')">Fibonacci</button>
+        <button type="button" class="btn btn-secondary" onclick="updateSequences('custom')">Custom</button>
+      </div>
 
-    <button class="btn btn-info copy-link-button" onclick="copyToClipboard('<%= roomData.room_url %>')"
-      id="copyLinkButton" disabled>Copy
-      Link</button>
+      <button class="btn btn-info copy-link-button" onclick="copyToClipboard('<%= roomData.room_url %>')"
+        id="copyLinkButton" disabled>Copy
+        Link</button>
 
-    <div class="input-container">
-      <input type="text" id="sequenceInput" class="form-control" placeholder="Enter a value">
-      <input type="text" id="descriptionInput" class="form-control" placeholder="Enter a description">
-    </div>
-
-
-    <div class="input-container timer-container">
       <div class="input-container">
-        <label for="toggleTimer">Enable Timer:</label>
-        <label class="switch">
-          <input type="checkbox" id="toggleTimer" onchange="toggleTimer()">
-          <span class="slider round"></span>
-        </label>
+        <input type="text" id="sequenceInput" class="form-control" placeholder="Enter a value">
+        <input type="text" id="descriptionInput" class="form-control" placeholder="Enter a description">
       </div>
-      <div class="MuiFormControl-root MuiTextField-root input-container">
-        <label for="hourInput">Hours:</label>
-        <input type="number" id="hourInput" class="form-control" min="0" value="0">
-      </div>
-      <div class="MuiFormControl-root MuiTextField-root input-container">
-        <label for="minuteInput">Minutes:</label>
-        <input type="number" id="minuteInput" class="form-control" min="0" max="59" value="0">
-      </div>
-      <div class="MuiFormControl-root MuiTextField-root input-container">
-        <label for="secondInput">Seconds:</label>
-        <input type="number" id="secondInput" class="form-control" min="0" max="59" value="0">
-      </div>
-      <div id="countdownTimer" class="timer-container timer-text">
-        <!-- Countdown timer will be displayed here -->
-      </div>
-    </div>
 
 
-
-
-
-    <div id="tileContainer" class="tile-container">
+      <div class="input-container timer-container">
+        <div class="input-container">
+          <label for="toggleTimer">Enable Timer:</label>
+          <label class="switch">
+            <input type="checkbox" id="toggleTimer" onchange="toggleTimer()">
+            <span class="slider round"></span>
+          </label>
+        </div>
+        <div class="MuiFormControl-root MuiTextField-root input-container">
+          <label for="hourInput">Hours:</label>
+          <input type="number" id="hourInput" class="form-control" min="0" value="0">
+        </div>
+        <div class="MuiFormControl-root MuiTextField-root input-container">
+          <label for="minuteInput">Minutes:</label>
+          <input type="number" id="minuteInput" class="form-control" min="0" max="59" value="0">
+        </div>
+        <div class="MuiFormControl-root MuiTextField-root input-container">
+          <label for="secondInput">Seconds:</label>
+          <input type="number" id="secondInput" class="form-control" min="0" max="59" value="0">
+        </div>
+        <div id="countdownTimer" class="timer-container timer-text">
+          <!-- Countdown timer will be displayed here -->
+        </div>
+      </div>
+      <div id="tileContainer" class="tile-container">
+      </div>
     </div>
   </div>
 
-  <div class="right-container">
-    <div class="leaderboard-container zoomed-out-container">
-      <table class="leaderboard table table-striped" id="leaderboard">
-        <thead>
-          <tr>
-            <th>Joiner Name</th>
-            <th>Voted</th>
-            <th>Spectator</th>
-            <th class="voted-value-column">Voted Value</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
-    <form id="adminMessageForm" action="/send-admin-message" method="POST">
-      <button type="submit" class="btn btn-primary zoomed-out-container" onclick="submitForm()" id="submitButton"
-        disabled>Submit</button>
-    </form>
 
-    <button class="btn btn-success calculate-button zoomed-out-container"
-      onclick="calculateAverage(randomNumber, '<%= roomData %>', false)" id="calculateButton"
-      disabled>Calculate</button>
-    <div class="random-number" id="randomNumber"></div>
+  <div class="right-container" style="background-image: url('/admin-joiner-leaderboard-background'); background-size:auto 100%; background-position: left;">
+
+    <div class="padded">
+      <div class="leaderboard-container zoomed-out-container">
+        <table class="leaderboard table table-striped" id="leaderboard">
+          <thead>
+            <tr>
+              <th>Joiner Name</th>
+              <th>Voted</th>
+              <th>Spectator</th>
+              <th class="voted-value-column">Voted Value</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <form id="adminMessageForm" action="/send-admin-message" method="POST">
+        <button type="submit" class="btn btn-primary zoomed-out-container" onclick="submitForm()" id="submitButton"
+          disabled>Submit</button>
+      </form>
+
+      <button class="btn btn-success calculate-button zoomed-out-container"
+        onclick="calculateAverage(randomNumber, '<%= roomData %>', false)" id="calculateButton"
+        disabled>Calculate</button>
+      <div class="random-number" id="randomNumber"></div>
+    </div>
   </div>
+
 
 
 

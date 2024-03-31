@@ -160,17 +160,21 @@
     .timer-text {
       margin-left: 4rem;
       margin-right: 4rem;
-  font-family: Arial, sans-serif; /* Change the font family */
-  font-size: 48px; /* Set the font size to be large */
-  font-weight: bold; /* Make the text bold */
-  color: #656363;
-}
+      font-family: Arial, sans-serif;
+      /* Change the font family */
+      font-size: 48px;
+      /* Set the font size to be large */
+      font-weight: bold;
+      /* Make the text bold */
+      color: #656363;
+    }
   </style>
 </head>
 
 <body>
   <div class="left-container zoomed-out-container">
-    <h2>Welcome <%= username %></h2>
+    <h2>Welcome <%= username %>
+    </h2>
     <h1>Joiner Interface</h1>
     <div id="countdownTimer" class="timer-container timer-text">
       <!-- Countdown timer will be displayed here -->
@@ -254,7 +258,7 @@
       populateDescription('<%= roomData.description %>');
 
 
-      const isChecked = decodeHtmlEntities('<%= roomData.timer_enabled %>')==="true";
+      const isChecked = decodeHtmlEntities('<%= roomData.timer_enabled %>') === "true";
       const timestamp = decodeHtmlEntities('<%= roomData.timestamp %>');
       const timerValue = decodeHtmlEntities('<%= roomData.timer_value %>');
 

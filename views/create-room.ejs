@@ -60,10 +60,21 @@
     button:hover {
       background-color: #0056b3;
     }
+
+    /* Added style for the background image */
+    #background-svg {
+      position: absolute;
+      z-index: -1;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: auto;
+    }
   </style>
 </head>
 
 <body>
+  <img src="/create-room-background" id="background-svg" alt="Background SVG Image">
   <div class="text-center">
     <h1>Create Room</h1>
     <form action="/create-room" method="POST">
