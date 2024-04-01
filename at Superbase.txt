@@ -2,15 +2,22 @@ in superbase,
 
 SQL Editor -> run this query to create the rooms table
 
+replace supabase URL and API key in indes.js
+
 /////////////////////////////////////////
 CREATE TABLE IF NOT EXISTS rooms (
-  room_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  room_url VARCHAR(255) NOT NULL,
-  room_creator_username VARCHAR(255) NOT NULL,
-  room_creator_id UUID NOT NULL,
-  room_created_at TIMESTAMPTZ DEFAULT current_timestamp,
-  joiners JSONB NOT NULL DEFAULT '{}',
-  UNIQUE (room_url)
+    room_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    room_url VARCHAR(255) NOT NULL,
+    room_creator_username VARCHAR(255) NOT NULL,
+    room_creator_id UUID NOT NULL,
+    room_created_at TIMESTAMPTZ DEFAULT current_timestamp,
+    joiners JSONB NOT NULL DEFAULT '{}',
+    sequence TEXT,
+    description TEXT,
+    timer_enabled BOOLEAN,
+    timer_value INT,
+    timestamp TEXT,
+    UNIQUE (room_url)
 );
 
 /////////////////////////////////////////

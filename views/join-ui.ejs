@@ -16,27 +16,32 @@
       background-color: #928888b0;
       display: flex;
       font-family: Arial, sans-serif;
-      /* Use a widely available font family */
       color: #333;
-      /* Set a default text color */
     }
+
 
     .left-container {
       width: 70%;
       padding: 40px;
+      position: relative;
     }
 
     .right-container {
       width: 30%;
       padding: 40px;
       background-color: #fff;
-      height: 100vh;
+      min-height: 100vh;
     }
+
+
 
     .tile-container {
       display: flex;
       flex-wrap: wrap;
-      margin: 20px;
+      margin: 0px;
+      /* height:40vh; */
+      margin-bottom: 16px;
+      overflow-y: auto;
     }
 
     .tile {
@@ -51,17 +56,17 @@
       cursor: pointer;
       transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
       background: #FFF;
-      color: #FFA000;
+      color: hsl(38, 100%, 50%);
       border: 1px solid #FFF;
       box-shadow: 0 2px 6px 0 rgba(0, 0, 0, 0.26);
       font-size: 1.5em;
-      padding: 24px;
+      padding-top: 50px;
+      padding-bottom: 50px;
       font-weight: bold;
-      /* Make the font bold */
     }
 
     .tile:not(.clickable) {
-      cursor: not-allowed;
+      cursor: -webkit-grab;
     }
 
     .tile:hover {
@@ -92,7 +97,7 @@
       height: 0;
       padding-bottom: calc(10% - 20px);
       line-height: 30px;
-      font-size: 1em;
+      font-size: 1.5em;
       margin: 12px;
     }
 
@@ -104,7 +109,6 @@
       margin-bottom: 20px;
       font-size: 1.2em;
       font-weight: bold;
-      /* Make button text bold */
     }
 
     .leaderboard {
@@ -161,29 +165,42 @@
       margin-left: 4rem;
       margin-right: 4rem;
       font-family: Arial, sans-serif;
-      /* Change the font family */
       font-size: 48px;
-      /* Set the font size to be large */
       font-weight: bold;
-      /* Make the text bold */
       color: #656363;
+    }
+
+    .tile.highlighted {
+      background-color: rgb(242, 215, 142);
+      box-shadow: 0 0 10px rgba(229, 192, 81, 0.5);
+    }
+
+    .tile.disabled {
+      opacity: 0.5;
+      /* Reduce opacity to visually indicate disabled state */
+      pointer-events: none;
+      /* Disable mouse interactions */
+      cursor: not-allowed;
+      /* Change cursor to indicate not-allowed */
     }
   </style>
 </head>
 
 <body>
-  <div class="left-container zoomed-out-container">
+  <div class="left-container zoomed-out-container"
+    style="background-image: url('/admin-joiner-main-background'); background-size: 100% auto; background-position: top;">
     <h2>Welcome <%= username %>
     </h2>
     <h1>Joiner Interface</h1>
     <div id="countdownTimer" class="timer-container timer-text">
-      <!-- Countdown timer will be displayed here -->
     </div>
 
     <div id="tileContainer" class="tile-container"></div>
   </div>
 
-  <div class="right-container">
+  <div class="right-container"
+    style="background-image: url('/admin-joiner-leaderboard-background'); background-size:auto 100%; background-position: left;">
+
     <div class="zoomed-out-container">
       <div class="description-container ">
         <h3>Description</h3>
@@ -216,6 +233,14 @@
 
 
   <script>
+
+    let sessionOn = true;
+    let tilesClickable = true;
+
+    let timerInterval; // Variable to store the timer interval
+    let timerFrozen = false; // Variable to track whether the timer is frozen or not
+
+
     function populateDescription(description) {
       const descriptionText = document.getElementById('descriptionText');
       descriptionText.innerText = description;
@@ -228,33 +253,38 @@
       const formattedString = sequence.replace(/\s*,\s*/g, ',');
       const resultArray2 = formattedString.split(',');
       const finalArray2 = resultArray2.slice(0, -2);
-      finalArray2.push('?');
-      finalArray2.push('🍵');
 
-      finalArray2.forEach((value) => {
+      const finalArray3 = [];
+
+      // Object to keep track of encountered elements
+      const encounteredElements = {};
+
+      for (const element of finalArray2) {
+        // Check if the element has been encountered before
+        if (!encounteredElements[element]) {
+          finalArray3.push(element);
+          encounteredElements[element] = true;
+        }
+      }
+
+      finalArray3.push('?');
+      finalArray3.push('🍵');
+
+      finalArray3.forEach((value) => {
         const tile = document.createElement('div');
         tile.classList.add('tile', 'small-tile');
-
-
-
-        // if (spectator) {
-        //   tile.classList.add('unclickable'); // Add a class to style the tile as unclickable
-        // } else {
-
-        // }
-
-        tile.addEventListener('click', () => handleTileClick(value.trim(), spectator));
         tile.innerText = value.trim();
+        tile.setAttribute('data-content', value.trim()); // Add data-content attribute
         tileContainer.appendChild(tile);
+        tile.addEventListener('click', () => handleTileClick(value.trim(), spectator));
       });
+
     }
 
 
     function populatePage() {
       const sequenceData = '<%= roomData.sequence %>';
       generateTilesFromSequence(sequenceData, false);
-      //       // Check if the spectator state is true for any joiner
-      // const spectator = joinedPeople.find(person => person.joinerName === username)?.spectator;
       populateDescription('<%= roomData.description %>');
 
 
@@ -263,8 +293,6 @@
       const timerValue = decodeHtmlEntities('<%= roomData.timer_value %>');
 
       if (isChecked && timerValue > 0) {
-        // Start the countdown timer
-        console.log("isChecked : ", isChecked, "and timerValue : ", timerValue);
         timerIntervalId = startCountdownTimer('countdownTimer', timestamp, timerValue);
       }
     }
@@ -294,49 +322,46 @@
       randomNumberElement.innerText = `Average : ${getRandomNumber}`;
     }
 
-
-    // TODO: timer reusable
     function startCountdownTimer(timerId, timestamp, timerValue) {
       const timerElement = document.getElementById(timerId);
-      console.log("In Function in Timestamp:", timestamp);
-      console.log("In Function in timerValue:", timerValue);
 
       const currentTimestamp = new Date().getTime();
-      console.log("Current Timestamp:", currentTimestamp);
 
       const timeGap = currentTimestamp - timestamp;
 
-      console.log(" timeGap:", timeGap);
-
       const startTime = Math.max(timeGap, 0);
 
-      console.log("startTime:", startTime);
-
       const targetTimestamp = timerValue * 1000;
-      console.log("targetTimestamp:", targetTimestamp);
-      const timerInterval = setInterval(() => {
-        const currentTimestampInterval = new Date().getTime();
 
-        const remainingTime = Math.max(targetTimestamp - startTime - (currentTimestampInterval - currentTimestamp), 0);
-        console.log("Remaining Time:", remainingTime);
+      timerInterval = setInterval(() => {
+        if (!timerFrozen) { // Check if the timer is not frozen
+          const currentTimestampInterval = new Date().getTime();
 
-        const hours = Math.floor(remainingTime / (1000 * 60 * 60));
-        const minutes = Math.floor((remainingTime % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((remainingTime % (1000 * 60)) / 1000);
+          const remainingTime = Math.max(targetTimestamp - startTime - (currentTimestampInterval - currentTimestamp), 0);
 
-        timerElement.innerText = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-        if (remainingTime === 0) {
-          clearInterval(timerInterval);
-          timerElement.innerText = 'Timer expired!';
+          const hours = Math.floor(remainingTime / (1000 * 60 * 60));
+          const minutes = Math.floor((remainingTime % (1000 * 60 * 60)) / (1000 * 60));
+          const seconds = Math.floor((remainingTime % (1000 * 60)) / 1000);
+
+          timerElement.innerText = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+          if (remainingTime === 0) {
+            clearInterval(timerInterval);
+            timerElement.innerText = 'Timer expired!';
+          }
         }
       }, 1000);
     }
 
-    async function handleTileClick(tileContent, spectator) {
 
 
+    async function handleTileClick(tileContent, spectator = false) {
       const formData = new FormData(joinForm);
       let joinMessage = tileContent;
+
+      if (!tilesClickable) {
+        console.log('Tiles are disabled.');
+        return;
+      }
 
       if (spectator) {
         joinMessage = "SpectatorEntity";
@@ -346,13 +371,22 @@
       const username = formData.get('username');
       console.log('Tile Clicked:', tileContent);
 
+      const allTiles = document.querySelectorAll('.tile');
+      const clickedTile = document.querySelector(`.tile[data-content="${tileContent}"]`);
+
+      // Check if the clicked tile is disabled
+      if (clickedTile.classList.contains('disabled')) {
+        console.log('Tile is disabled.');
+        return;
+      }
+
       try {
         const response = await fetch('/send-join-message', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ username, joinMessage, roomData }),
+          body: JSON.stringify({ username, joinMessage, roomData, isAdmin: "false" }),
         });
 
         if (!response.ok) {
@@ -361,10 +395,20 @@
 
         console.log('Join message sent successfully.');
 
+        // Remove highlight from all tiles
+        allTiles.forEach(tile => {
+          tile.classList.remove('highlighted');
+        });
+
+        // Highlight the clicked tile
+        clickedTile.classList.add('highlighted');
+
       } catch (error) {
         console.error(`Error sending join message: ${error.message}`);
       }
     }
+
+
 
     window.onload = populatePage;
 
@@ -374,11 +418,8 @@
       return txt.value;
     }
 
-    const eventSource = new EventSource('/sse');
 
-    eventSource.onmessage = async (event) => {
-      const eventData = JSON.parse(event.data);
-
+    async function updatePage(eventData) {
       switch (eventData.action) {
         case 'newJoiner':
           console.log(`New joiner option`);
@@ -405,48 +446,69 @@
         case 'updateJoiners':
           console.log(`New joiner option`);
           if (eventData.url === decodeHtmlEntities('<%= roomData.room_url %>')) {
-            console.log(`Updating joiners structure for room: ${eventData.url}`);
-            console.log(`Room Creator: ${eventData.roomCreator}`);
-            console.log('Updated Joiners Structure:', eventData.joinersStructure);
-
             updateLeaderboard(true, eventData.joinersStructure);
-            // updateJoinersStructure(eventData.joinersStructure);
             const sequenceData = '<%= roomData.sequence %>';
 
-            generateTilesFromSequence(sequenceData, false);
-            //       // Check if the spectator state is true for any joiner
-            // const spectator = joinedPeople.find(person => person.joinerName === username)?.spectator;
-
+            // generateTilesFromSequence(sequenceData, false);
+            console.log("IsTimerEnabled Value is : ", eventData.isTimerEnabled);
           }
           break;
 
-        case 'adminEvent': // Handle the new 'adminEvent'
-          console.log('Received admin event:', eventData);
-          console.log(eventData.roomData);
-          console.log(decodeHtmlEntities('<%= roomData.room_url %>'));
+        case 'adminEvent':
           if (eventData.roomData === decodeHtmlEntities('<%= roomData.room_url %>')) {
-            // Print the admin event data
-            console.log('Random Number:', eventData.randomNumber);
-            console.log('Room Data:', eventData.roomData);
-            console.log('Joined People:', eventData.joinedPeople);
             updateLeaderboardAfterCalculate(true, eventData.joinedPeople, eventData.randomNumber);
             displayRandomNumber(eventData.randomNumber);
 
           }
 
-          // You can perform actions or update UI based on the admin event data
           break;
+          case 'newSession':
+            console.log("One h");
+          if (eventData.roomData === decodeHtmlEntities('<%= roomData.room_url %>')) {
+            console.log("Two h");
+            handleNewSessionEvent(eventData);
+
+          }
+
+          break; 
 
         default:
           console.log(`Unknown action: ${eventData.action}`);
           break;
       }
+    }
+
+    const eventSource = new EventSource('/sse');
+
+    eventSource.onmessage = async (event) => {
+      const eventData = JSON.parse(event.data);
+
+      if (sessionOn) {
+        updatePage(eventData);
+      }
+
+      switch (eventData.action) {
+          case 'newSession':
+            console.log("One h");
+          if (eventData.roomData === decodeHtmlEntities('<%= roomData.room_url %>')) {
+            console.log("Two h");
+            sessionOn=true;
+            handleNewSessionEvent(eventData);
+
+          }
+
+          break; 
+
+        default:
+          console.log(`Unknown action: ${eventData.action}`);
+          break;
+      }
+
     };
 
 
 
     function updateLeaderboard(shouldRender = false, joinedPeople = []) {
-      console.log("leaderboard data: ", joinedPeople);
       if (!shouldRender) {
         return;
       }
@@ -472,30 +534,122 @@
     }
 
     function updateLeaderboardAfterCalculate(shouldRender = false, joinedPeople = []) {
-      console.log("leaderboard data: ", joinedPeople);
       if (!shouldRender) {
         return;
       }
 
-
       const leaderboard = document.getElementById('leaderboard');
       const leaderboardBody = leaderboard.querySelector('tbody');
 
-      console.log(joinedPeople + " found");
       leaderboardBody.innerHTML = '';
 
       joinedPeople.forEach(person => {
         const row = document.createElement('tr');
         row.innerHTML = `
-        <td>${person.joinerName}</td>
-        <td>${person.voted ? '✅' : '❌'}</td>
-        <td>${person.votedValue === "SpectatorEntity" ? "🕵️" : person.votedValue}</td>
-    `;
+    <td>${person.joinerName}</td>
+    <td>${person.voted ? '✅' : '❌'}</td>
+    <td>${person.votedValue === "SpectatorEntity" ? "🕵️" : person.votedValue}</td>
+  `;
         leaderboardBody.appendChild(row);
       });
 
       leaderboard.style.display = 'table';
+
+      freezePage();
+
+      // // Call unfreezePage after 5 seconds
+      // setTimeout(unfreezePage, 5000);
+      // Call rerenderUI after 5 seconds
+      // setTimeout(() => {
+      //   unfreezePage();
+      //   rerenderUI(dummySequenceData, dummyJoinedPeopleData, dummyRandomNumber);
+      // }, 5000);
+      // rerenderUI(dummySequenceData, dummyJoinedPeopleData, dummyRandomNumber);
+
     }
+
+
+
+    function freezePage() {
+      sessionOn = false; // Set sessionOn to false to stop updating the page
+      disableTiles(); // Call disableTiles function to disable the tiles
+      freezeTimer(); // Freeze the timer
+    }
+
+    function unfreezePage() {
+      sessionOn = true; // Set sessionOn to true to resume updating the page
+      enableTiles(); // Call enableTiles function to enable the tiles
+      unfreezeTimer(); // Unfreeze the timer
+    }
+
+    // FIXME:
+    function disableTiles() {
+      tilesClickable = false; // Set tilesClickable to false
+
+      // Disable tiles and remove onclick functionality
+      const allTiles = document.querySelectorAll('.tile');
+      allTiles.forEach(tile => {
+        tile.classList.add('disabled'); // Add disabled class
+        tile.removeAttribute('onclick'); // Remove onclick attribute
+      });
+    }
+
+    // FIXME:
+    function enableTiles() {
+      tilesClickable = true; // Set tilesClickable to true
+
+      // Enable tiles and add onclick functionality
+      const allTiles = document.querySelectorAll('.tile');
+      allTiles.forEach(tile => {
+        tile.classList.remove('disabled'); // Remove disabled class
+        tile.setAttribute('onclick', 'handleTileClick(this.dataset.content)'); // Add onclick attribute
+      });
+    }
+
+    // FIXME:
+    function freezeTimer() {
+      timerFrozen = true; // Set timerFrozen to true to freeze the timer
+    }
+
+    // FIXME:
+    function unfreezeTimer() {
+      timerFrozen = false; // Set timerFrozen to false to unfreeze the timer
+    }
+
+
+    // FIXME: Function to handle "newSession" event
+    function handleNewSessionEvent(eventData) {
+      // Unfreeze the page
+      unfreezePage();
+
+      // Update UI with received data
+      rerenderUI(eventData.sequenceData, eventData.joinedPeopleData);
+    }
+
+    function rerenderUI(sequenceData, joinedPeopleData) {
+      // Update the sequence tiles
+      console.log(sequenceData);
+      generateTilesFromSequence(sequenceData, false);
+
+      // Update the description
+      populateDescription('<%= roomData.description %>');
+
+      // Update the leaderboard
+      updateLeaderboard(true, joinedPeopleData);
+
+      // Remove any classes or attributes added during specific actions
+      // For example, if there were classes added during updateLeaderboardAfterCalculate, remove them here
+    }
+
+    // // Call rerenderUI function with dummy data
+    // const dummySequenceData = "1, 2, 3, 4, 5";
+    // const dummyJoinedPeopleData = [
+    //   { joinerName: "John", voted: true, votedValue: "A" },
+    //   { joinerName: "Alice", voted: false, votedValue: "B" },
+    //   // Add more dummy data as needed
+    // ];
+
+
 
     function updateJoinersStructure(joinersStructure) {
       const joinersList = document.getElementById('joinersList');
