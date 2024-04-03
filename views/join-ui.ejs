@@ -9,7 +9,7 @@
     integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
   <style>
     .zoomed-out-container {
-      zoom: 0.8;
+      zoom: 1.0;
     }
 
     body {
@@ -32,7 +32,7 @@
       background-color: #fff;
       min-height: 100vh;
     }
-
+    
 
 
     .tile-container {
@@ -56,17 +56,16 @@
       cursor: pointer;
       transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
       background: #FFF;
-      color: hsl(38, 100%, 50%);
+      color: #000000;
       border: 1px solid #FFF;
       box-shadow: 0 2px 6px 0 rgba(0, 0, 0, 0.26);
       font-size: 1.5em;
-      padding-top: 50px;
-      padding-bottom: 50px;
+      padding-top: 24px;
       font-weight: bold;
     }
 
     .tile:not(.clickable) {
-      cursor: -webkit-grab;
+      cursor: not-allowed;
     }
 
     .tile:hover {
@@ -97,7 +96,7 @@
       height: 0;
       padding-bottom: calc(10% - 20px);
       line-height: 30px;
-      font-size: 1.5em;
+      font-size: 1.9em;
       margin: 12px;
     }
 
@@ -162,34 +161,20 @@
     }
 
     .timer-text {
-      margin-left: 4rem;
+      margin-left: 16px;
       margin-right: 4rem;
       font-family: Arial, sans-serif;
       font-size: 48px;
       font-weight: bold;
       color: #656363;
     }
-
-    .tile.highlighted {
-      background-color: rgb(242, 215, 142);
-      box-shadow: 0 0 10px rgba(229, 192, 81, 0.5);
-    }
-
-    .tile.disabled {
-      opacity: 0.5;
-      /* Reduce opacity to visually indicate disabled state */
-      pointer-events: none;
-      /* Disable mouse interactions */
-      cursor: not-allowed;
-      /* Change cursor to indicate not-allowed */
-    }
   </style>
 </head>
 
 <body>
   <div class="left-container zoomed-out-container"
-    style="background-image: url('/admin-joiner-main-background'); background-size: 100% auto; background-position: top;">
-    <h2>Welcome <%= username %>
+  style="background-image: url('/admin-joiner-main-background'); background-size: 100% auto; background-position: top;">
+    <h2 style="font-weight: bold;">Welcome <%= username %>
     </h2>
     <h1>Joiner Interface</h1>
     <div id="countdownTimer" class="timer-container timer-text">
@@ -198,13 +183,12 @@
     <div id="tileContainer" class="tile-container"></div>
   </div>
 
-  <div class="right-container"
-    style="background-image: url('/admin-joiner-leaderboard-background'); background-size:auto 100%; background-position: left;">
+  <div class="right-container" style="background-image: url('/admin-joiner-leaderboard-background'); background-size:auto 100%; background-position: left;">
 
     <div class="zoomed-out-container">
       <div class="description-container ">
-        <h3>Description</h3>
-        <p id="descriptionText"></p>
+        <h3 style="font-weight: bold;">Description</h3>
+        <p id="descriptionText" style="font-size: 20px;"></p>
       </div>
       <table class="leaderboard-container-overflow leaderboard table table-striped" id="leaderboard">
         <thead>
@@ -233,14 +217,6 @@
 
 
   <script>
-
-    let sessionOn = true;
-    let tilesClickable = true;
-
-    let timerInterval; // Variable to store the timer interval
-    let timerFrozen = false; // Variable to track whether the timer is frozen or not
-
-
     function populateDescription(description) {
       const descriptionText = document.getElementById('descriptionText');
       descriptionText.innerText = description;
@@ -253,32 +229,17 @@
       const formattedString = sequence.replace(/\s*,\s*/g, ',');
       const resultArray2 = formattedString.split(',');
       const finalArray2 = resultArray2.slice(0, -2);
+      finalArray2.push('?');
+      finalArray2.push('🍵');
 
-      const finalArray3 = [];
-
-      // Object to keep track of encountered elements
-      const encounteredElements = {};
-
-      for (const element of finalArray2) {
-        // Check if the element has been encountered before
-        if (!encounteredElements[element]) {
-          finalArray3.push(element);
-          encounteredElements[element] = true;
-        }
-      }
-
-      finalArray3.push('?');
-      finalArray3.push('🍵');
-
-      finalArray3.forEach((value) => {
+      finalArray2.forEach((value) => {
         const tile = document.createElement('div');
         tile.classList.add('tile', 'small-tile');
-        tile.innerText = value.trim();
-        tile.setAttribute('data-content', value.trim()); // Add data-content attribute
-        tileContainer.appendChild(tile);
-        tile.addEventListener('click', () => handleTileClick(value.trim(), spectator));
-      });
 
+        tile.addEventListener('click', () => handleTileClick(value.trim(), spectator));
+        tile.innerText = value.trim();
+        tileContainer.appendChild(tile);
+      });
     }
 
 
@@ -329,39 +290,33 @@
 
       const timeGap = currentTimestamp - timestamp;
 
+
       const startTime = Math.max(timeGap, 0);
 
+
       const targetTimestamp = timerValue * 1000;
+      const timerInterval = setInterval(() => {
+        const currentTimestampInterval = new Date().getTime();
 
-      timerInterval = setInterval(() => {
-        if (!timerFrozen) { // Check if the timer is not frozen
-          const currentTimestampInterval = new Date().getTime();
+        const remainingTime = Math.max(targetTimestamp - startTime - (currentTimestampInterval - currentTimestamp), 0);
 
-          const remainingTime = Math.max(targetTimestamp - startTime - (currentTimestampInterval - currentTimestamp), 0);
+        const hours = Math.floor(remainingTime / (1000 * 60 * 60));
+        const minutes = Math.floor((remainingTime % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((remainingTime % (1000 * 60)) / 1000);
 
-          const hours = Math.floor(remainingTime / (1000 * 60 * 60));
-          const minutes = Math.floor((remainingTime % (1000 * 60 * 60)) / (1000 * 60));
-          const seconds = Math.floor((remainingTime % (1000 * 60)) / 1000);
-
-          timerElement.innerText = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-          if (remainingTime === 0) {
-            clearInterval(timerInterval);
-            timerElement.innerText = 'Timer expired!';
-          }
+        timerElement.innerText = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        if (remainingTime === 0) {
+          clearInterval(timerInterval);
+          timerElement.innerText = 'Timer expired!';
         }
       }, 1000);
     }
 
+    async function handleTileClick(tileContent, spectator) {
 
 
-    async function handleTileClick(tileContent, spectator = false) {
       const formData = new FormData(joinForm);
       let joinMessage = tileContent;
-
-      if (!tilesClickable) {
-        console.log('Tiles are disabled.');
-        return;
-      }
 
       if (spectator) {
         joinMessage = "SpectatorEntity";
@@ -371,22 +326,13 @@
       const username = formData.get('username');
       console.log('Tile Clicked:', tileContent);
 
-      const allTiles = document.querySelectorAll('.tile');
-      const clickedTile = document.querySelector(`.tile[data-content="${tileContent}"]`);
-
-      // Check if the clicked tile is disabled
-      if (clickedTile.classList.contains('disabled')) {
-        console.log('Tile is disabled.');
-        return;
-      }
-
       try {
         const response = await fetch('/send-join-message', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ username, joinMessage, roomData, isAdmin: "false" }),
+          body: JSON.stringify({ username, joinMessage, roomData }),
         });
 
         if (!response.ok) {
@@ -395,20 +341,10 @@
 
         console.log('Join message sent successfully.');
 
-        // Remove highlight from all tiles
-        allTiles.forEach(tile => {
-          tile.classList.remove('highlighted');
-        });
-
-        // Highlight the clicked tile
-        clickedTile.classList.add('highlighted');
-
       } catch (error) {
         console.error(`Error sending join message: ${error.message}`);
       }
     }
-
-
 
     window.onload = populatePage;
 
@@ -418,8 +354,11 @@
       return txt.value;
     }
 
+    const eventSource = new EventSource('/sse');
 
-    async function updatePage(eventData) {
+    eventSource.onmessage = async (event) => {
+      const eventData = JSON.parse(event.data);
+
       switch (eventData.action) {
         case 'newJoiner':
           console.log(`New joiner option`);
@@ -449,8 +388,7 @@
             updateLeaderboard(true, eventData.joinersStructure);
             const sequenceData = '<%= roomData.sequence %>';
 
-            // generateTilesFromSequence(sequenceData, false);
-            console.log("IsTimerEnabled Value is : ", eventData.isTimerEnabled);
+            generateTilesFromSequence(sequenceData, false);
           }
           break;
 
@@ -462,53 +400,17 @@
           }
 
           break;
-          case 'newSession':
-            console.log("One h");
-          if (eventData.roomData === decodeHtmlEntities('<%= roomData.room_url %>')) {
-            console.log("Two h");
-            handleNewSessionEvent(eventData);
-
-          }
-
-          break; 
 
         default:
           console.log(`Unknown action: ${eventData.action}`);
           break;
       }
-    }
-
-    const eventSource = new EventSource('/sse');
-
-    eventSource.onmessage = async (event) => {
-      const eventData = JSON.parse(event.data);
-
-      if (sessionOn) {
-        updatePage(eventData);
-      }
-
-      switch (eventData.action) {
-          case 'newSession':
-            console.log("One h");
-          if (eventData.roomData === decodeHtmlEntities('<%= roomData.room_url %>')) {
-            console.log("Two h");
-            sessionOn=true;
-            handleNewSessionEvent(eventData);
-
-          }
-
-          break; 
-
-        default:
-          console.log(`Unknown action: ${eventData.action}`);
-          break;
-      }
-
     };
 
 
 
     function updateLeaderboard(shouldRender = false, joinedPeople = []) {
+      console.log("leaderboard data: ", joinedPeople);
       if (!shouldRender) {
         return;
       }
@@ -534,122 +436,30 @@
     }
 
     function updateLeaderboardAfterCalculate(shouldRender = false, joinedPeople = []) {
+      console.log("leaderboard data: ", joinedPeople);
       if (!shouldRender) {
         return;
       }
 
+
       const leaderboard = document.getElementById('leaderboard');
       const leaderboardBody = leaderboard.querySelector('tbody');
 
+      console.log(joinedPeople + " found");
       leaderboardBody.innerHTML = '';
 
       joinedPeople.forEach(person => {
         const row = document.createElement('tr');
         row.innerHTML = `
-    <td>${person.joinerName}</td>
-    <td>${person.voted ? '✅' : '❌'}</td>
-    <td>${person.votedValue === "SpectatorEntity" ? "🕵️" : person.votedValue}</td>
-  `;
+        <td>${person.joinerName}</td>
+        <td>${person.voted ? '✅' : '❌'}</td>
+        <td>${person.votedValue === "SpectatorEntity" ? "🕵️" : person.votedValue}</td>
+    `;
         leaderboardBody.appendChild(row);
       });
 
       leaderboard.style.display = 'table';
-
-      freezePage();
-
-      // // Call unfreezePage after 5 seconds
-      // setTimeout(unfreezePage, 5000);
-      // Call rerenderUI after 5 seconds
-      // setTimeout(() => {
-      //   unfreezePage();
-      //   rerenderUI(dummySequenceData, dummyJoinedPeopleData, dummyRandomNumber);
-      // }, 5000);
-      // rerenderUI(dummySequenceData, dummyJoinedPeopleData, dummyRandomNumber);
-
     }
-
-
-
-    function freezePage() {
-      sessionOn = false; // Set sessionOn to false to stop updating the page
-      disableTiles(); // Call disableTiles function to disable the tiles
-      freezeTimer(); // Freeze the timer
-    }
-
-    function unfreezePage() {
-      sessionOn = true; // Set sessionOn to true to resume updating the page
-      enableTiles(); // Call enableTiles function to enable the tiles
-      unfreezeTimer(); // Unfreeze the timer
-    }
-
-    // FIXME:
-    function disableTiles() {
-      tilesClickable = false; // Set tilesClickable to false
-
-      // Disable tiles and remove onclick functionality
-      const allTiles = document.querySelectorAll('.tile');
-      allTiles.forEach(tile => {
-        tile.classList.add('disabled'); // Add disabled class
-        tile.removeAttribute('onclick'); // Remove onclick attribute
-      });
-    }
-
-    // FIXME:
-    function enableTiles() {
-      tilesClickable = true; // Set tilesClickable to true
-
-      // Enable tiles and add onclick functionality
-      const allTiles = document.querySelectorAll('.tile');
-      allTiles.forEach(tile => {
-        tile.classList.remove('disabled'); // Remove disabled class
-        tile.setAttribute('onclick', 'handleTileClick(this.dataset.content)'); // Add onclick attribute
-      });
-    }
-
-    // FIXME:
-    function freezeTimer() {
-      timerFrozen = true; // Set timerFrozen to true to freeze the timer
-    }
-
-    // FIXME:
-    function unfreezeTimer() {
-      timerFrozen = false; // Set timerFrozen to false to unfreeze the timer
-    }
-
-
-    // FIXME: Function to handle "newSession" event
-    function handleNewSessionEvent(eventData) {
-      // Unfreeze the page
-      unfreezePage();
-
-      // Update UI with received data
-      rerenderUI(eventData.sequenceData, eventData.joinedPeopleData);
-    }
-
-    function rerenderUI(sequenceData, joinedPeopleData) {
-      // Update the sequence tiles
-      console.log(sequenceData);
-      generateTilesFromSequence(sequenceData, false);
-
-      // Update the description
-      populateDescription('<%= roomData.description %>');
-
-      // Update the leaderboard
-      updateLeaderboard(true, joinedPeopleData);
-
-      // Remove any classes or attributes added during specific actions
-      // For example, if there were classes added during updateLeaderboardAfterCalculate, remove them here
-    }
-
-    // // Call rerenderUI function with dummy data
-    // const dummySequenceData = "1, 2, 3, 4, 5";
-    // const dummyJoinedPeopleData = [
-    //   { joinerName: "John", voted: true, votedValue: "A" },
-    //   { joinerName: "Alice", voted: false, votedValue: "B" },
-    //   // Add more dummy data as needed
-    // ];
-
-
 
     function updateJoinersStructure(joinersStructure) {
       const joinersList = document.getElementById('joinersList');

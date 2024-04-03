@@ -1,991 +1,726 @@
-  <!-- views/admin-ui.ejs -->
-  <!DOCTYPE html>
-  <html lang="en">
+<!-- views/admin-ui.ejs -->
+<!DOCTYPE html>
+<html lang="en">
 
-  <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>Admin UI</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet"
-      integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
-    <style>
-      .zoomed-out-container {
-        zoom: 0.8;
-      }
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Admin UI</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
+  <style>
+    .zoomed-out-container {
+      zoom: 1.0;
+    }
 
-      body {
-        background-color: #a5a2a2b0;
-        display: flex;
-        font-family: Arial, sans-serif;
-        color: #333;
-      }
+    body {
+      background-color: #a5a2a2b0;
+      display: flex;
+      font-family: Arial, sans-serif;
+      color: #333;
+    }
 
-      /* Styles for the alert container */
-      .alert-container {
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        width: 300px;
-        height: 200px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 9999;
-        /* Ensure the alert is on top */
-      }
+    .left-container {
+      width: 70%;
+      position: relative;
+    }
 
-      /* Styles for the alert box */
-      .alert-box {
-        background-color: #d6d6d5;
-        /* Updated background color */
-        padding: 20px;
-        border-radius: 8px;
-        box-shadow: 0 16px 16px rgba(0, 0, 0, 0.15);
-        font-size: 1.5em;
-        color: #333;
-        width: 100%;
-        height: 100%;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        position: relative;
-      }
-
-
-      /* Styles for the close button */
-      .close-button {
-        cursor: pointer;
-        position: absolute;
-        top: 5px;
-        right: 5px;
-        padding: 5px;
-      }
-
-      .left-container {
-        width: 70%;
-        position: relative;
-      }
-
-      .right-container {
-        width: 30%;
-        background-color: #fff;
-        min-height: 100vh;
-      }
+    .right-container {
+      width: 30%;
+      background-color: #fff;
+      min-height: 100vh;
+    }
 
 
 
-      .background-image-container {
-        position: relative;
-        width: 100%;
-        height: 100%;
-      }
+    .background-image-container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
 
-      .background-image-container::after {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-image: url('/admin-joiner-main-background');
-        opacity: 0.5;
-        background-size: 100% 100%;
-        background-position: top;
-      }
-
-
-
-      .tile-container {
-        display: flex;
-        flex-wrap: wrap;
-        margin: 0px;
-        /* height:40vh; */
-        margin-bottom: 16px;
-        overflow-y: auto;
-      }
-
-      .padded {
-        padding: 40px;
-      }
-
-      .tile {
-        width: calc(30% - 20px);
-        height: 0;
-        padding-bottom: calc(30% - 20px);
-        border-radius: 6px;
-        margin: 20px;
-        display: inline-block;
-        text-align: center;
-        line-height: 60px;
-        cursor: pointer;
-        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-        background: #FFF;
-        color: hsl(38, 100%, 50%);
-        border: 1px solid #FFF;
-        box-shadow: 0 2px 6px 0 rgba(0, 0, 0, 0.26);
-        font-size: 1.5em;
-        padding-top: 50px;
-        padding-bottom: 50px;
-        font-weight: bold;
-      }
-
-      .tile:not(.clickable) {
-        cursor: not-allowed;
-      }
-
-      .tile:hover {
-        transform: scale(1.05);
-        box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.26);
-      }
-
-      .tile:active {
-        transform: scale(0.95);
-        box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.26);
-      }
-
-      .input-container {
-        width: 700px;
-        margin-top: 20px;
-        margin-bottom: 20px;
-        display: flex;
-        align-items: center;
-      }
+    .background-image-container::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: url('/admin-joiner-main-background');
+      opacity: 0.5;
+      background-size: 100% 100%;
+      background-position: top;
+    }
 
 
-      .input-container input {
-        margin-right: 10px;
-        font-size: 1em;
-      }
 
-      .small-tile {
-        width: calc(10% - 20px);
-        height: 0;
-        padding-bottom: calc(10% - 20px);
-        line-height: 30px;
-        font-size: 1.5em;
-        margin: 12px;
-      }
+    .tile-container {
+      display: flex;
+      flex-wrap: wrap;
+      margin: 0px;
+      /* height:40vh; */
+      margin-bottom: 16px;
+      overflow-y: auto;
+    }
 
-      .right-container button,
-      .right-container .leaderboard,
-      .right-container .calculate-button,
-      .right-container .random-number,
-      .right-container .copy-link-button {
-        margin-bottom: 20px;
-        font-size: 1.2em;
-        font-weight: bold;
-      }
+    .padded {
+      padding: 40px;
+    }
 
-      .leaderboard {
-        list-style-type: none;
-        padding: 0;
-        display: none;
-      }
+    .tile {
+      width: calc(30% - 20px);
+      height: 0;
+      padding-bottom: calc(30% - 20px);
+      border-radius: 6px;
+      margin: 20px;
+      display: inline-block;
+      text-align: center;
+      line-height: 60px;
+      cursor: pointer;
+      transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+      background: #FFF;
+      color: #000000;
+      border: 1px solid #FFF;
+      box-shadow: 0 2px 6px 0 rgba(0, 0, 0, 0.26);
+      font-size: 1.5em;
+      padding-top: 24px;
+      font-weight: bold;
+    }
 
-      .leaderboard th,
-      .leaderboard td {
-        text-align: center;
-        padding: 10px;
-      }
+    .tile:not(.clickable) {
+      cursor: not-allowed;
+    }
 
-      .leaderboard tr:nth-child(even) {
-        background-color: #f2f2f2;
-      }
+    .tile:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.26);
+    }
 
-      .leaderboard-container {
-        max-height: 500px;
-        overflow-y: auto;
-      }
+    .tile:active {
+      transform: scale(0.95);
+      box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.26);
+    }
 
-      .random-number {
-        font-size: 2em;
-        color: #4285F4;
-      }
+    .input-container {
+      width: 400px;
+      margin-top: 20px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+    }
 
-      .voted-value-column {
-        display: none;
-      }
+    .input-container input {
+      margin-right: 10px;
+      font-size: 1em;
+    }
 
-      .timer-container {
-        margin-top: 20px;
-      }
+    .small-tile {
+      width: calc(10% - 20px);
+      height: 0;
+      padding-bottom: calc(10% - 20px);
+      line-height: 30px;
+      font-size: 1.9em;
+      margin: 12px;
+    }
 
-      .timer-container label {
-        margin-right: 10px;
-      }
+    .right-container button,
+    .right-container .leaderboard,
+    .right-container .calculate-button,
+    .right-container .random-number,
+    .right-container .copy-link-button {
+      margin-bottom: 20px;
+      font-size: 1.2em;
+      font-weight: bold;
+    }
 
-      .timer-container input {
-        width: 60px;
-        margin-right: 10px;
-      }
+    .leaderboard {
+      list-style-type: none;
+      padding: 0;
+      display: none;
+    }
 
-      .timer-text {
-        margin-left: 4rem;
-        margin-right: 4rem;
-        font-family: Arial, sans-serif;
-        font-size: 48px;
-        font-weight: bold;
-        color: #656363;
-      }
+    .leaderboard th,
+    .leaderboard td {
+      text-align: center;
+      padding: 10px;
+    }
 
-      .tile.highlighted {
-        background-color: rgb(242, 215, 142);
-        box-shadow: 0 0 10px rgba(229, 192, 81, 0.5);
-      }
-    </style>
-  </head>
+    .leaderboard tr:nth-child(even) {
+      background-color: #f2f2f2;
+    }
 
-  <body>
-    <div class="left-container"
-      style="background-image: url('/admin-joiner-main-background'); background-size: 100% auto; background-position: top;">
+    .leaderboard-container {
+      max-height: 500px;
+      overflow-y: auto;
+    }
 
-      <div class="padded zoomed-out-container">
-        <h2>Welcome <%= username %>
-        </h2>
-        <p>Admin: <%= username %>
-        </p>
+    .random-number {
+      font-size: 2em;
+      color: #4285F4;
+    }
+
+    .voted-value-column {
+      display: none;
+    }
+
+    .timer-container {
+      margin-top: 20px;
+    }
+
+    .timer-container label {
+      margin-right: 10px;
+    }
+
+    .timer-container input {
+      width: 60px;
+      margin-right: 10px;
+    }
+
+    .timer-text {
+      margin-left: 4rem;
+      margin-right: 4rem;
+      font-family: Arial, sans-serif;
+      font-size: 48px;
+      font-weight: bold;
+      color: #656363;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="left-container"
+    style="background-image: url('/admin-joiner-main-background'); background-size: 100% auto; background-position: top;">
+
+    <div class="padded zoomed-out-container">
+      <h2 style="font-weight: bold;">Welcome <%= username %>
+      </h2>
+      <p>Admin: <%= username %>
+      </p>
 
 
-        <div class="btn-group" role="group" aria-label="Sequence Type">
-          <button  id="sequenceSelector1" type="button" class="btn btn-secondary" onclick="updateSequences('tShirtSizes')">T-Shirt</button>
-          <button  id="sequenceSelector2" type="button" class="btn btn-secondary" onclick="updateSequences('sequence')">Sequence</button>
-          <!-- <button type="button" class="btn btn-secondary" onclick="updateSequences('sequence2')">Seq 2</button> -->
-          <button  id="sequenceSelector3" type="button" class="btn btn-secondary" onclick="updateSequences('fibonacci')">Fibonacci</button>
-          <button  id="sequenceSelector4" type="button" class="btn btn-secondary" onclick="updateSequences('custom')">Custom</button>
-        </div>
+      <div class="btn-group" role="group" aria-label="Sequence Type">
+        <button type="button" class="btn btn-secondary" onclick="updateSequences('tShirtSizes')">T-Shirt</button>
+        <button type="button" class="btn btn-secondary" onclick="updateSequences('sequence1')">Seq 1</button>
+        <button type="button" class="btn btn-secondary" onclick="updateSequences('sequence2')">Seq 2</button>
+        <button type="button" class="btn btn-secondary" onclick="updateSequences('fibonacci')">Fibonacci</button>
+        <button type="button" class="btn btn-secondary" onclick="updateSequences('custom')">Custom</button>
+      </div>
+
+      <button class="btn btn-info copy-link-button" onclick="copyToClipboard('<%= roomData.room_url %>')"
+        id="copyLinkButton" disabled>Copy
+        Link</button>
+
+      <div class="input-container">
+        <input type="text" id="sequenceInput" class="form-control" placeholder="Enter a value">
+        <input type="text" id="descriptionInput" class="form-control" placeholder="Enter a description">
+      </div>
 
 
-        <button id="copyLinkButton" class="btn btn-info copy-link-button" onclick="copyToClipboard('<%= roomData.room_url %>')"
-          id="copyLinkButton" style="display: none;">Copy
-          Link</button>
-
+      <div class="input-container timer-container">
         <div class="input-container">
-          <input type="text" id="sequenceInput" class="form-control" placeholder="Maximum Value">
-          <input type="text"  id="descriptionInput" class="form-control" placeholder="Enter a description">
-        </div>
-
-
-        <div class="input-container timer-container">
-          <div class="input-container">
-            <label for="toggleTimer">Enable Timer:</label>
-            <label class="switch">
-              <input type="checkbox" id="toggleTimer" onchange="toggleTimer()">
-              <span class="slider round"></span>
-            </label>
-          </div>
-          <div class="MuiFormControl-root MuiTextField-root input-container">
-            <label for="hourInput">Hours:</label>
-            <input type="number" id="hourInput" class="form-control" min="0" value="0">
-          </div>
-          <div class="MuiFormControl-root MuiTextField-root input-container">
-            <label for="minuteInput">Minutes:</label>
-            <input type="number" id="minuteInput" class="form-control" min="0" max="59" value="0">
-          </div>
-          <div class="MuiFormControl-root MuiTextField-root input-container">
-            <label for="secondInput">Seconds:</label>
-            <input type="number" id="secondInput" class="form-control" min="0" max="59" value="0">
-          </div>
-          <div id="countdownTimer" class="timer-container timer-text">
-          </div>
-        </div>
-        <div id="tileContainer" class="tile-container">
-        </div>
-      </div>
-    </div>
-
-
-    <div class="right-container"
-      style="background-image: url('/admin-joiner-leaderboard-background'); background-size:auto 100%; background-position: left;">
-
-      <div class="padded">
-        <div class="leaderboard-container zoomed-out-container">
-          <table class="leaderboard table table-striped" id="leaderboard">
-            <thead>
-              <tr>
-                <th>Joiner Name</th>
-                <th>Voted</th>
-                <th>Spectator</th>
-                <th class="voted-value-column">Voted Value</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-        </div>
-        <form id="adminMessageForm" action="/send-admin-message" method="POST">
-          <button type="submit" class="btn btn-primary zoomed-out-container" onclick="submitForm()" id="submitButton"
-            disabled>Open room</button>
-        </form>
-
-        <button class="btn btn-success calculate-button zoomed-out-container"
-          onclick="calculateAverage(randomNumber, '<%= roomData %>', false)" id="calculateButton" disabled>Show
-          Votes</button>
-          <br>
-        <button class="btn calculate-button zoomed-out-container" style="background-color: grey;"
-          onclick="" id="newVotingSession" disabled>Start New Voting Session</button>
-        <div class="random-number" id="randomNumber"></div>
-      </div>
-      <!-- Alert box container -->
-      <div class="alert-container" id="alertContainer" style="display: none;">
-        <!-- Alert box -->
-        <div class="alert-box">
-          <div>Room Created</div>
-          <!-- Close button -->
-          <span class="close-button" onclick="closeAlert()">Close</span>
-        </div>
-      </div>
-      <form id="joinForm" action="/send-join-message" method="POST" className="hiddenOne">
-        <input type="hidden" name="roomData" value='<%= JSON.stringify(roomData) %>'>
-        <input type="hidden" name="username" value='<%= username %>'>
-      </form>
-    </div>
-
-
-
-
-
-
-    <script>
-      
-
-
-      function freezeAdminUI() {
-  // Disable Sequence Selector
-  document.getElementById('sequenceSelector1').disabled = true;
-  document.getElementById('sequenceSelector2').disabled = true;
-  document.getElementById('sequenceSelector3').disabled = true;
-  document.getElementById('sequenceSelector4').disabled = true;
-
-  // Disable Copy Link Button
-  document.getElementById('copyLinkButton').disabled = true;
-
-  // Disable Maximum Value Input Field
-  document.getElementById('sequenceInput').disabled = true;
-
-  // Disable Description Input Field
-  document.getElementById('descriptionInput').disabled = true;
-
-  // Disable Enable Timer Switch
-  document.getElementById('toggleTimer').disabled = true;
-
-  // Disable Timer Input Fields
-  document.getElementById('hourInput').disabled = true;
-  document.getElementById('minuteInput').disabled = true;
-  document.getElementById('secondInput').disabled = true;
-
-  // Disable Countdown Timer
-  document.getElementById('countdownTimer').disabled = true;
-
-  // Disable Tile Container
-  document.getElementById('tileContainer').disabled = true;
-
-  // Disable Leaderboard Container
-  document.getElementById('leaderboard').disabled = true;
-
-  // Disable Open Room Button
-  document.getElementById('submitButton').disabled = true;
-
-  // Disable Show Votes Button
-  document.getElementById('calculateButton').disabled = true;
-
-  // Enable New Voting Session Button
-  document.getElementById('newVotingSession').disabled = false;
-
-        // Enable tiles and add onclick functionality
-        const allTiles = document.querySelectorAll('.tile');
-      allTiles.forEach(tile => {
-        tile.classList.remove('disabled'); // Remove disabled class
-        tile.setAttribute('onclick', 'handleTileClick(this.dataset.content)'); // Add onclick attribute
-      });
-}
-
-// Call the freezeAdminUI function when needed
-
-      const tShirtSizes = ['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL'];
-      const sequence = [1, 2, 3, 4, 5];
-      const fibonacci = [0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144];
-      const custom = ['give', 'a', 'comma', 'seperated', 'string'];
-
-      function generateFibonacci(value) {
-        const sequence = [];
-        let a = 0, b = 1;
-
-        while (a < value) {
-          sequence.push(a);
-          const temp = a;
-          a = b;
-          b += temp;
-        }
-
-        return sequence;
-      }
-
-      function generateSequence2(count) {
-        return Array.from({ length: count / 2 }, (_, i) => (i + 1) * 2);
-      }
-
-      let joinedPeople = [];
-
-      let updatedSequence;
-
-      let sequenceSelected = false;
-
-      function updateSequences(type) {
-        const inputValue = document.getElementById('sequenceInput').value;
-        const description = document.getElementById('descriptionInput').value;
-        const sequenceInput = document.getElementById('sequenceInput');
-        switch (type) {
-          case 'tShirtSizes':
-            updatedSequence = tShirtSizes;
-            sequenceInput.setAttribute('disabled', 'disabled');
-            sequenceInput.placeholder = "Disabled";
-            sequenceSelected = true;
-            break;
-          case 'sequence':
-            const seq1Count = parseInt(inputValue, 10) || 5;
-            updatedSequence = Array.from({ length: seq1Count }, (_, i) => i + 1);
-            sequenceInput.placeholder = "End Value";
-            sequenceInput.removeAttribute('disabled');
-            sequenceSelected = true;
-            break;
-          // case 'sequence2':
-          //   const seq2Count = parseInt(inputValue, 10) || 10;
-          //   updatedSequence = generateSequence2(seq2Count);
-          //   sequenceInput.removeAttribute('disabled');
-          //   break;
-          case 'fibonacci':
-            const fibonacciCount = parseInt(inputValue, 10) || 10;
-            updatedSequence = generateFibonacci(fibonacciCount);
-            sequenceInput.removeAttribute('disabled');
-            sequenceInput.placeholder = "Maximum Value";
-            sequenceSelected = true;
-            break;
-          case 'custom':
-            updatedSequence = inputValue.split(',').map(item => item.trim());
-            if (updatedSequence.length > 0) {
-              sequenceSelected = true;
-            } else {
-              sequenceSelected = false;
-            }
-            sequenceInput.removeAttribute('disabled');
-            sequenceInput.placeholder = "Enter a value list separated by commas";
-            break;
-
-          default:
-            updatedSequence = [];
-            sequenceSelected = false;
-        }
-
-
-
-
-        let finalArray3 = [];
-
-        // Object to keep track of encountered elements
-        let encounteredElements = {};
-
-        for (const element of updatedSequence) {
-          // Check if the element has been encountered before
-          if (!encounteredElements[element]) {
-            finalArray3.push(element);
-            encounteredElements[element] = true;
-          }
-        }
-
-
-
-        if (!finalArray3.includes('?')) {
-          finalArray3.push('?');
-        }
-        if (!finalArray3.includes('🍵')) {
-          finalArray3.push('🍵');
-        }
-
-
-        async function handleTileClick(tile, spectator = false) {
-          console.log('Clicked Tile:', tile.innerText);
-          const formData = new FormData(joinForm);
-          const joinMessage = spectator ? "SpectatorEntity" : tile.innerText;
-          const roomData = formData.get('roomData');
-          const username = formData.get('username');
-          const isAdmin = true; // Assuming the admin is clicking the card
-
-          try {
-            const response = await fetch('/send-join-message', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({ username, joinMessage, roomData, isAdmin }),
-            });
-
-            if (!response.ok) {
-              throw new Error(`Error sending join message: ${response.statusText}`);
-            }
-
-            console.log('Join message sent successfully.');
-
-            // Remove highlight from all tiles
-            const allTiles = document.querySelectorAll('.tile');
-            allTiles.forEach(tile => {
-              tile.classList.remove('highlighted');
-            });
-
-            // Highlight the clicked tile
-            tile.classList.add('highlighted');
-
-          } catch (error) {
-            console.error(`Error sending join message: ${error.message}`);
-          }
-        }
-
-
-
-
-        const tileContainer = document.getElementById('tileContainer');
-        tileContainer.innerHTML = '';
-        // finalArray3.forEach((value) => {
-        // const tile = document.createElement('div');
-        // tile.classList.add('tile', 'small-tile', 'clickable');
-        // tile.innerText = value;
-        //   tile.addEventListener('click', () => {
-        //     handleTileClick(value.trim(), false);
-        //   });
-
-        //   tileContainer.appendChild(tile);
-        // });
-
-        finalArray3.forEach((value) => {
-          const tile = document.createElement('div');
-          tile.classList.add('tile', 'small-tile', 'clickable');
-          tile.innerText = value;
-          // tileContainer.appendChild(tile);
-          tile.addEventListener('click', () => handleTileClick(tile, false));
-
-          tileContainer.appendChild(tile);
-        });
-
-
-        document.getElementById('submitButton').disabled = !canEnableSubmitButton() || description.trim() === '';
-        document.getElementById('calculateButton').disabled = true;
-        // document.getElementById('copyLinkButton').disabled = !canEnableCopyLinkButton();
-        // document.getElementById('copyLinkButton').style.display = 'block';
-      }
-
-
-      function checkDescriptionInput() {
-        const submitButton = document.getElementById('submitButton');
-        const descriptionInput = document.getElementById('descriptionInput');
-
-        // Enable or disable the submit button based on the input value
-        submitButton.disabled = !descriptionInput.value.trim() || !canEnableSubmitButton();
-      }
-
-      // Add event listener to the description input field
-      document.getElementById('descriptionInput').addEventListener('input', checkDescriptionInput);
-
-      function updateLeaderboard(shouldRender = false, joinedPeople = []) {
-        console.log("leaderboard data: ", joinedPeople);
-        if (!shouldRender) {
-          return;
-        }
-
-        document.getElementById('calculateButton').disabled = !haveAllJoinersVoted(joinedPeople);
-
-        const leaderboard = document.getElementById('leaderboard');
-        const leaderboardBody = leaderboard.querySelector('tbody');
-
-        leaderboardBody.innerHTML = '';
-
-        joinedPeople.forEach(person => {
-          const row = document.createElement('tr');
-          row.innerHTML = `
-        <td>${person.joinerName}</td>
-        <td>${person.voted ? '✅' : '❌'}</td>
-        <td>
+          <label for="toggleTimer">Enable Timer:</label>
           <label class="switch">
-            <input type="checkbox" ${person.spectator ? 'checked' : ''} onchange="toggleSpectator('${person.joinerName}', this.checked)">
+            <input type="checkbox" id="toggleTimer" onchange="toggleTimer()">
             <span class="slider round"></span>
           </label>
-        </td>
-        <td class="voted-value-column">${person.votedValue === "SpectatorEntity" ? "🕵️" : person.voted ? person.votedValue : "⛔"}</td>
-      `;
-          leaderboardBody.appendChild(row);
+        </div>
+        <div class="MuiFormControl-root MuiTextField-root input-container">
+          <label for="hourInput">Hours:</label>
+          <input type="number" id="hourInput" class="form-control" min="0" value="0">
+        </div>
+        <div class="MuiFormControl-root MuiTextField-root input-container">
+          <label for="minuteInput">Minutes:</label>
+          <input type="number" id="minuteInput" class="form-control" min="0" max="59" value="0">
+        </div>
+        <div class="MuiFormControl-root MuiTextField-root input-container">
+          <label for="secondInput">Seconds:</label>
+          <input type="number" id="secondInput" class="form-control" min="0" max="59" value="0">
+        </div>
+        <div id="countdownTimer" class="timer-container timer-text">
+        </div>
+      </div>
+      <div id="tileContainer" class="tile-container">
+      </div>
+    </div>
+  </div>
+
+
+  <div class="right-container"
+    style="background-image: url('/admin-joiner-leaderboard-background'); background-size:auto 100%; background-position: left;">
+
+    <div class="padded">
+      <div class="leaderboard-container zoomed-out-container">
+        <table class="leaderboard table table-striped" id="leaderboard">
+          <thead>
+            <tr>
+              <th>Joiner Name</th>
+              <th>Voted</th>
+              <th>Spectator</th>
+              <th class="voted-value-column">Voted Value</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <form id="adminMessageForm" action="/send-admin-message" method="POST">
+        <button type="submit" class="btn btn-primary zoomed-out-container" onclick="submitForm()" id="submitButton"
+          disabled>Submit</button>
+      </form>
+
+      <button class="btn btn-success calculate-button zoomed-out-container"
+        onclick="calculateAverage(randomNumber, '<%= roomData %>', false)" id="calculateButton"
+        disabled>Calculate</button>
+      <div class="random-number" id="randomNumber"></div>
+    </div>
+  </div>
+
+
+
+
+
+
+  <script>
+    const tShirtSizes = ['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL'];
+    const sequence1 = [1, 2, 3, 4, 5];
+    const sequence2 = [2, 4, 6, 8, 10];
+    const fibonacci = [0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144];
+    const custom = ['give', 'a', 'comma', 'seperated', 'string'];
+
+    function generateFibonacci(value) {
+      const sequence = [];
+      let a = 0, b = 1;
+
+      while (a < value) {
+        sequence.push(a);
+        const temp = a;
+        a = b;
+        b += temp;
+      }
+
+      return sequence;
+    }
+
+    function generateSequence2(count) {
+      return Array.from({ length: count / 2 }, (_, i) => (i + 1) * 2);
+    }
+
+    let joinedPeople = [];
+
+    let updatedSequence;
+
+    function updateSequences(type) {
+      const inputValue = document.getElementById('sequenceInput').value;
+      const description = document.getElementById('descriptionInput').value;
+
+      switch (type) {
+        case 'tShirtSizes':
+          updatedSequence = tShirtSizes;
+          break;
+        case 'sequence1':
+          const seq1Count = parseInt(inputValue, 10) || 5;
+          updatedSequence = Array.from({ length: seq1Count }, (_, i) => i + 1);
+          break;
+        case 'sequence2':
+          const seq2Count = parseInt(inputValue, 10) || 10;
+          updatedSequence = generateSequence2(seq2Count);
+          break;
+        case 'fibonacci':
+          const fibonacciCount = parseInt(inputValue, 10) || 10;
+          updatedSequence = generateFibonacci(fibonacciCount);
+          break;
+        case 'custom':
+          updatedSequence = inputValue.split(',').map(item => item.trim());
+          break;
+        default:
+          updatedSequence = [];
+      }
+
+      if (!updatedSequence.includes('?')) {
+        updatedSequence.push('?');
+      }
+      if (!updatedSequence.includes('🍵')) {
+        updatedSequence.push('🍵');
+      }
+
+      const tileContainer = document.getElementById('tileContainer');
+      tileContainer.innerHTML = '';
+      updatedSequence.forEach((value) => {
+        const tile = document.createElement('div');
+        tile.classList.add('tile', 'small-tile', 'clickable');
+        tile.innerText = value;
+        tile.addEventListener('click', () => {
+          handleTileClick(tile);
         });
-
-        leaderboard.style.display = 'table';
-      }
-
-      function toggleSpectator(joinerName, isChecked) {
-
-        fetch('/toggle-spectator', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ joiner_Name: joinerName, is_Checked: isChecked, roomUrl: decodeHtmlEntities('<%= roomData.room_url %>'), username: decodeHtmlEntities('<%= username %>') }),
-        })
-          .then(response => {
-            if (!response.ok) {
-              throw new Error(`Error toggling spectator state: ${response.statusText}`);
-            }
-            console.log(`Spectator state toggled successfully for ${joinerName}`);
-          })
-          .catch(error => {
-            console.error(`Error toggling spectator state: ${error.message}`);
-          });
-      }
-
-
-
-
-      let joinedPeopleTemp = [];
-
-      function getVotedValuesArray() {
-        const votedValuesArray = [];
-
-        joinedPeopleTemp.forEach(person => {
-          if (person.voted) {
-            votedValuesArray.push(person.votedValue);
-          }
-        });
-
-        return votedValuesArray;
-      }
-
-
-      function submitForm() {
-        const leaderboard = document.getElementById('leaderboard');
-
-        leaderboard.style.display = 'table';
-
-        const votedValueColumns = document.querySelectorAll('.voted-value-column');
-        votedValueColumns.forEach(column => {
-          column.style.display = 'none';
-        });
-
-        // document.getElementById('copyLinkButton').disabled = !canEnableSubmitButton();
-        document.getElementById('copyLinkButton').style.display = 'inline-block';
-        const sequenceString = getCurrentSequence().join(', ');
-        console.log('Sequence:', sequenceString);
-      }
-
-
-      function haveAllJoinersVoted(joinedPeopleArr) {
-        return joinedPeopleArr.length > 0 && joinedPeopleArr.every(person => person.voted);
-      }
-
-      function getCurrentSequence() {
-        const tileContainer = document.getElementById('tileContainer');
-        const tiles = tileContainer.getElementsByClassName('tile');
-        const sequence = Array.from(tiles).map(tile => tile.innerText);
-        return sequence;
-      }
-
-      function getCurrentDescription() {
-        const descriptionInput = document.getElementById('descriptionInput');
-        const description = descriptionInput.value.trim();
-        console.log("description is ", description);
-        return description;
-      }
-
-
-
-
-      // admin-ui.ejs
-      function calculateAverage(randomNumber, roomData, timerExpired = false) {
-
-        freezeAdminUI();
-
-        document.getElementById('sequence-selector').disabled = true;
-
-        const votedValueColumns = document.querySelectorAll('.voted-value-column');
-        votedValueColumns.forEach(column => {
-          column.style.display = 'table-cell';
-        });
-
-        const randomNumberElement = document.getElementById('randomNumber');
-
-        const averageNumber = calculateAverageOrMedian(getVotedValuesArray(), timerExpired);
-
-        randomNumberElement.innerText = `Average: ${averageNumber}`;
-
-        document.getElementById('calculateButton').disabled = true;
-
-        fetch('/broadcast-data', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ randomNumber: averageNumber, roomData: decodeHtmlEntities('<%= roomData.room_url %>'), joinedPeople: joinedPeopleTemp }),
-        })
-          .then(response => {
-            if (!response.ok) {
-              throw new Error(`Error sending data to server: ${response.statusText}`);
-            }
-            console.log("Data sent successfully.");
-          })
-          .catch(error => {
-            console.error(`Error sending data to server: ${error.message}`);
-          });
-
-
-        fetch('/update-timer-enabled', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ roomData: decodeHtmlEntities('<%= roomData.room_url %>'), timerEnabled: false }),
-        })
-          .then(response => {
-            if (!response.ok) {
-              throw new Error(`Error updating timer state: ${response.statusText}`);
-            }
-            console.log('Timer state updated successfully.');
-          })
-          .catch(error => {
-            console.error(`Error updating timer state: ${error.message}`);
-          });
-
-        document.getElementById('calculateButton').disabled = true;
-      }
-
-
-
-      function canEnableSubmitButton() {
-
-        return sequenceSelected;
-      }
-
-      function canEnableCalculateButton() {
-        return joinedPeople.every(person => person.voted);
-      }
-
-      function returnjoinedPeople() {
-        return joinedPeople;
-      }
-
-      function startCountdownTimer(timerId, timestamp, timerValue) {
-        const timerElement = document.getElementById(timerId);
-
-        const currentTimestamp = new Date().getTime();
-
-        const timeGap = currentTimestamp - timestamp;
-
-
-        const startTime = Math.max(timeGap, 0);
-
-
-        const targetTimestamp = timerValue * 1000;
-        const timerInterval = setInterval(() => {
-          const currentTimestampInterval = new Date().getTime();
-
-          const remainingTime = Math.max(targetTimestamp - startTime - (currentTimestampInterval - currentTimestamp), 0);
-
-          const hours = Math.floor(remainingTime / (1000 * 60 * 60));
-          const minutes = Math.floor((remainingTime % (1000 * 60 * 60)) / (1000 * 60));
-          const seconds = Math.floor((remainingTime % (1000 * 60)) / 1000);
-
-          if (hours == 0 && minutes == 0 && seconds == 0) {
-            setTime = false;
-          } else {
-            setTime = true;
-          }
-
-          timerElement.innerText = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-          if (remainingTime === 0) {
-            clearInterval(timerInterval);
-            timerElement.innerText = 'Timer expired!';
-
-            calculateAverage(randomNumber, decodeHtmlEntities('<%= roomData %>'), true);
-          }
-        }, 1000);
-      }
-
-
-      function calculateAverageOrMedian(sequence, timerExpired) {
-
-        const flattenedSequence = sequence.flat();
-
-        const filteredValuesWithVoteRemoved = flattenedSequence.filter(value => value !== '?' && value !== "🍵" && value !== "SpectatorEntity" && value !== "🕵️");
-
-        const filteredValues = flattenedSequence.filter(value => value !== '?' && value !== "🍵" && value !== "SpectatorEntity" && value !== "🕵️");
-
-        const allInteger = filteredValues.every(value => !isNaN(parseInt(value, 10)));
-
-        if (allInteger) {
-          const numericArray = filteredValues.map(value => parseInt(value, 10));
-
-          const sum = numericArray.reduce((acc, value) => acc + value, 0);
-          const average = sum / filteredValues.length;
-
-          return average;
-        } else {
-          console.log("No average");
-          return "No average";
-        }
-      }
-
-      document.addEventListener('DOMContentLoaded', () => {
-        const adminMessageForm = document.getElementById('adminMessageForm');
-
-        adminMessageForm.addEventListener('submit', async (event) => {
-          event.preventDefault();
-
-          const formData = new FormData(adminMessageForm);
-          const sequenceInput = getCurrentSequence().join(', ');
-          const description = getCurrentDescription();
-
-          const hours = parseInt(document.getElementById('hourInput').value);
-          const minutes = parseInt(document.getElementById('minuteInput').value);
-          const seconds = parseInt(document.getElementById('secondInput').value);
-
-          const timerPrintValue = (hours * 3600) + (minutes * 60) + seconds;
-          const currentPrintTime = new Date().toLocaleString();
-
-
-
-          const timestamp = Date.now();
-          const timerValue = parseInt(document.getElementById('hourInput').value) * 3600 + parseInt(document.getElementById('minuteInput').value) * 60 + parseInt(document.getElementById('secondInput').value);
-
-          const toggleTimerCheckbox = document.getElementById('toggleTimer');
-          const isChecked = toggleTimerCheckbox.checked;
-
-          if (isChecked && timerValue > 0) {
-            console.log("isChecked : ", isChecked, "and timerValue : ", timerValue);
-            timerIntervalId = startCountdownTimer('countdownTimer', timestamp, timerValue);
-          }
-
-
-          try {
-            const response = await fetch('/send-admin-message', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                username: '<%= username %>',
-                sequenceInput,
-                description,
-                timerEnabled: isChecked,
-                timestamp: isChecked ? timestamp : 0,
-                timerValue: isChecked ? timerValue : 0,
-                isAdmin: true,
-              }
-              ),
-            });
-
-            if (!response.ok) {
-              throw new Error(`Error sending admin message: ${response.statusText}`);
-            }
-
-            console.log('Admin message sent successfully.');
-
-
-          } catch (error) {
-            console.error(`Error sending admin message: ${error.message}`);
-          }
-
-
-          document.getElementById('alertContainer').style.display = 'flex';
-          // Automatically close the alert after 5 seconds
-          setTimeout(closeAlert, 5000);
-        });
+        tileContainer.appendChild(tile);
       });
 
-      // Function to close the alert box manually
-      function closeAlert() {
-        document.getElementById('alertContainer').style.display = 'none';
+      document.getElementById('submitButton').disabled = !canEnableSubmitButton() || description.trim() === '';
+      document.getElementById('calculateButton').disabled = true;
+      document.getElementById('copyLinkButton').disabled = !canEnableCopyLinkButton();
+    }
+
+
+
+    function updateLeaderboard(shouldRender = false, joinedPeople = []) {
+      console.log("leaderboard data: ", joinedPeople);
+      if (!shouldRender) {
+        return;
       }
 
-      function copyToClipboard(url) {
-        const el = document.createElement('textarea');
-        el.value = url;
-        document.body.appendChild(el);
-        el.select();
-        document.execCommand('copy');
-        document.body.removeChild(el);
+      document.getElementById('calculateButton').disabled = !haveAllJoinersVoted(joinedPeople);
+
+      const leaderboard = document.getElementById('leaderboard');
+      const leaderboardBody = leaderboard.querySelector('tbody');
+
+      leaderboardBody.innerHTML = '';
+
+      joinedPeople.forEach(person => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+      <td>${person.joinerName}</td>
+      <td>${person.voted ? '✅' : '❌'}</td>
+      <td>
+        <label class="switch">
+          <input type="checkbox" ${person.spectator ? 'checked' : ''} onchange="toggleSpectator('${person.joinerName}', this.checked)">
+          <span class="slider round"></span>
+        </label>
+      </td>
+      <td class="voted-value-column">${person.votedValue === "SpectatorEntity" ? "🕵️" : person.voted ? person.votedValue : "⛔"}</td>
+    `;
+        leaderboardBody.appendChild(row);
+      });
+
+      leaderboard.style.display = 'table';
+    }
+
+    function toggleSpectator(joinerName, isChecked) {
+
+      fetch('/toggle-spectator', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ joiner_Name: joinerName, is_Checked: isChecked, roomUrl: decodeHtmlEntities('<%= roomData.room_url %>') }),
+      })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`Error toggling spectator state: ${response.statusText}`);
+          }
+          console.log(`Spectator state toggled successfully for ${joinerName}`);
+        })
+        .catch(error => {
+          console.error(`Error toggling spectator state: ${error.message}`);
+        });
+    }
+
+
+
+
+    let joinedPeopleTemp = [];
+
+    function getVotedValuesArray() {
+      const votedValuesArray = [];
+
+      joinedPeopleTemp.forEach(person => {
+        if (person.voted) {
+          votedValuesArray.push(person.votedValue);
+        }
+      });
+
+      return votedValuesArray;
+    }
+
+
+    function submitForm() {
+      const leaderboard = document.getElementById('leaderboard');
+
+      leaderboard.style.display = 'table';
+
+      const votedValueColumns = document.querySelectorAll('.voted-value-column');
+      votedValueColumns.forEach(column => {
+        column.style.display = 'none';
+      });
+
+      document.getElementById('copyLinkButton').disabled = !canEnableSubmitButton();
+      const sequenceString = getCurrentSequence().join(', ');
+      console.log('Sequence:', sequenceString);
+    }
+
+
+    function haveAllJoinersVoted(joinedPeopleArr) {
+      return joinedPeopleArr.length > 0 && joinedPeopleArr.every(person => person.voted);
+    }
+
+    function getCurrentSequence() {
+      const tileContainer = document.getElementById('tileContainer');
+      const tiles = tileContainer.getElementsByClassName('tile');
+      const sequence = Array.from(tiles).map(tile => tile.innerText);
+      return sequence;
+    }
+
+    function getCurrentDescription() {
+      const descriptionInput = document.getElementById('descriptionInput');
+      const description = descriptionInput.value.trim();
+      console.log("description is ", description);
+      return description;
+    }
+
+
+
+
+    // admin-ui.ejs
+    function calculateAverage(randomNumber, roomData, timerExpired = false) {
+
+      const votedValueColumns = document.querySelectorAll('.voted-value-column');
+      votedValueColumns.forEach(column => {
+        column.style.display = 'table-cell';
+      });
+
+      const randomNumberElement = document.getElementById('randomNumber');
+
+      const averageNumber = calculateAverageOrMedian(getVotedValuesArray(), timerExpired);
+
+      randomNumberElement.innerText = `Average: ${averageNumber}`;
+
+      document.getElementById('calculateButton').disabled = true;
+
+      fetch('/broadcast-data', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ randomNumber: averageNumber, roomData: decodeHtmlEntities('<%= roomData.room_url %>'), joinedPeople: joinedPeopleTemp }),
+      })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`Error sending data to server: ${response.statusText}`);
+          }
+          console.log("Data sent successfully.");
+        })
+        .catch(error => {
+          console.error(`Error sending data to server: ${error.message}`);
+        });
+
+      document.getElementById('calculateButton').disabled = true;
+    }
+
+
+
+    function canEnableSubmitButton() {
+      return true;
+    }
+
+    function canEnableCalculateButton() {
+      return joinedPeople.every(person => person.voted);
+    }
+
+    function returnjoinedPeople() {
+      return joinedPeople;
+    }
+
+    function startCountdownTimer(timerId, timestamp, timerValue) {
+      const timerElement = document.getElementById(timerId);
+
+      const currentTimestamp = new Date().getTime();
+
+      const timeGap = currentTimestamp - timestamp;
+
+
+      const startTime = Math.max(timeGap, 0);
+
+
+      const targetTimestamp = timerValue * 1000;
+      const timerInterval = setInterval(() => {
+        const currentTimestampInterval = new Date().getTime();
+
+        const remainingTime = Math.max(targetTimestamp - startTime - (currentTimestampInterval - currentTimestamp), 0);
+
+        const hours = Math.floor(remainingTime / (1000 * 60 * 60));
+        const minutes = Math.floor((remainingTime % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((remainingTime % (1000 * 60)) / 1000);
+
+        timerElement.innerText = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        if (remainingTime === 0) {
+          clearInterval(timerInterval);
+          timerElement.innerText = 'Timer expired!';
+
+          calculateAverage(randomNumber, decodeHtmlEntities('<%= roomData %>'), true);
+        }
+      }, 1000);
+    }
+
+
+    function calculateAverageOrMedian(sequence, timerExpired) {
+
+      const flattenedSequence = sequence.flat();
+
+      const filteredValuesWithVoteRemoved = flattenedSequence.filter(value => value !== '?' && value !== "🍵" && value !== "SpectatorEntity" && value !== "🕵️");
+
+      const filteredValues = flattenedSequence.filter(value => value !== '?' && value !== "🍵" && value !== "SpectatorEntity" && value !== "🕵️");
+
+      const allInteger = filteredValues.every(value => !isNaN(parseInt(value, 10)));
+
+      if (allInteger) {
+        const numericArray = filteredValues.map(value => parseInt(value, 10));
+
+        const sum = numericArray.reduce((acc, value) => acc + value, 0);
+        const average = sum / filteredValues.length;
+
+        return average;
+      } else {
+        console.log("No average");
+        return "No average";
       }
-    </script>
-    <script>
-      function decodeHtmlEntities(html) {
-        var txt = document.createElement('textarea');
-        txt.innerHTML = html;
-        return txt.value;
-      }
+    }
 
-      const eventSource = new EventSource('/sse');
+    document.addEventListener('DOMContentLoaded', () => {
+      const adminMessageForm = document.getElementById('adminMessageForm');
 
-      eventSource.onmessage = async (event) => {
-        const eventData = JSON.parse(event.data);
+      adminMessageForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
 
-        switch (eventData.action) {
-          case 'newJoiner':
-            if (eventData.url === decodeHtmlEntities('<%= roomData.room_url %>')) {
+        const formData = new FormData(adminMessageForm);
+        const sequenceInput = getCurrentSequence().join(', ');
+        const description = getCurrentDescription();
+
+        const hours = parseInt(document.getElementById('hourInput').value);
+        const minutes = parseInt(document.getElementById('minuteInput').value);
+        const seconds = parseInt(document.getElementById('secondInput').value);
+
+        const timerPrintValue = (hours * 3600) + (minutes * 60) + seconds;
+        const currentPrintTime = new Date().toLocaleString();
+
+
+
+        const timestamp = Date.now();
+        const timerValue = parseInt(document.getElementById('hourInput').value) * 3600 + parseInt(document.getElementById('minuteInput').value) * 60 + parseInt(document.getElementById('secondInput').value);
+
+        const toggleTimerCheckbox = document.getElementById('toggleTimer');
+        const isChecked = toggleTimerCheckbox.checked;
+
+        if (isChecked && timerValue > 0) {
+          console.log("isChecked : ", isChecked, "and timerValue : ", timerValue);
+          timerIntervalId = startCountdownTimer('countdownTimer', timestamp, timerValue);
+        }
+
+
+        try {
+          const response = await fetch('/send-admin-message', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              username: '<%= username %>',
+              sequenceInput,
+              description,
+              timerEnabled: isChecked,
+              timestamp: isChecked ? timestamp : 0,
+              timerValue: isChecked ? timerValue : 0
+            }
+            ),
+          });
+
+          if (!response.ok) {
+            throw new Error(`Error sending admin message: ${response.statusText}`);
+          }
+
+          console.log('Admin message sent successfully.');
+
+
+        } catch (error) {
+          console.error(`Error sending admin message: ${error.message}`);
+        }
+      });
+    });
+
+    function copyToClipboard(url) {
+      const el = document.createElement('textarea');
+      el.value = url;
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand('copy');
+      document.body.removeChild(el);
+    }
+  </script>
+  <script>
+    function decodeHtmlEntities(html) {
+      var txt = document.createElement('textarea');
+      txt.innerHTML = html;
+      return txt.value;
+    }
+
+    const eventSource = new EventSource('/sse');
+
+    eventSource.onmessage = async (event) => {
+      const eventData = JSON.parse(event.data);
+
+      switch (eventData.action) {
+        case 'newJoiner':
+          if (eventData.url === decodeHtmlEntities('<%= roomData.room_url %>')) {
+
+            if (!roomData) {
+              await new Promise(resolve => setTimeout(resolve, 4000));
+              console.log('Retrying to fetch updated roomData after timeout...');
 
               if (!roomData) {
-                await new Promise(resolve => setTimeout(resolve, 4000));
-                console.log('Retrying to fetch updated roomData after timeout...');
-
-                if (!roomData) {
-                  console.log('Room data is still undefined after timeout.');
-                  return;
-                }
+                console.log('Room data is still undefined after timeout.');
+                return;
               }
-
-            } else {
-              console.log(`Not equal: ${eventData.url} and <%= roomData.room_url %>`);
             }
-            break;
 
-          case 'updateJoiners':
-            if (eventData.url === decodeHtmlEntities('<%= roomData.room_url %>')) {
-              joinedPeopleTemp = eventData.joinersStructure;
+          } else {
+            console.log(`Not equal: ${eventData.url} and <%= roomData.room_url %>`);
+          }
+          break;
 
-              updateLeaderboard(true, eventData.joinersStructure);
-              updateJoinersStructure(eventData.joinersStructure);
-              console.log("IsTimerEnabled Value is : ", eventData.isTimerEnabled);
-            }
-            break;
+        case 'updateJoiners':
+          if (eventData.url === decodeHtmlEntities('<%= roomData.room_url %>')) {
+            joinedPeopleTemp = eventData.joinersStructure;
 
-          case 'updateSequence':
-            if (eventData.url === decodeHtmlEntities('<%= roomData.room_url %>')) {
-              updateSequence(eventData.sequence);
-            }
-            break;
-          default:
-            console.log(`Unknown action: ${eventData.action}`);
-            break;
-        }
-      };
+            updateLeaderboard(true, eventData.joinersStructure);
+            updateJoinersStructure(eventData.joinersStructure);
+          }
+          break;
 
-      function updateJoinersStructure(joinersStructure) {
-        const joinersList = document.getElementById('joinersList');
-        joinersList.innerHTML = '';
-
-        joinersStructure.forEach((joiner) => {
-          const listItem = document.createElement('li');
-          listItem.innerHTML = `Joiner Name: ${joiner.joinerName}, Joiner ID: ${joiner.joinerId}, Voted: ${joiner.voted}, Voted Value: ${joiner.votedValue}`;
-          joinersList.appendChild(listItem);
-        });
+        case 'updateSequence':
+          if (eventData.url === decodeHtmlEntities('<%= roomData.room_url %>')) {
+            updateSequence(eventData.sequence);
+          }
+          break;
+        default:
+          console.log(`Unknown action: ${eventData.action}`);
+          break;
       }
+    };
+
+    function updateJoinersStructure(joinersStructure) {
+      const joinersList = document.getElementById('joinersList');
+      joinersList.innerHTML = '';
+
+      joinersStructure.forEach((joiner) => {
+        const listItem = document.createElement('li');
+        listItem.innerHTML = `Joiner Name: ${joiner.joinerName}, Joiner ID: ${joiner.joinerId}, Voted: ${joiner.voted}, Voted Value: ${joiner.votedValue}`;
+        joinersList.appendChild(listItem);
+      });
+    }
 
 
-      function updateSequence(sequence) {
-        const sequenceElement = document.getElementById('sequence');
-        if (sequenceElement) {
-          sequenceElement.innerText = `Sequence: ${sequence}`;
-        }
+    function updateSequence(sequence) {
+      const sequenceElement = document.getElementById('sequence');
+      if (sequenceElement) {
+        sequenceElement.innerText = `Sequence: ${sequence}`;
       }
+    }
 
-      eventSource.onerror = (error) => {
-        console.error('SSE Error:', error);
-        eventSource.close();
-      };
+    eventSource.onerror = (error) => {
+      console.error('SSE Error:', error);
+      eventSource.close();
+    };
 
-    </script>
+  </script>
 
-  </body>
+</body>
 
-  </html>
+</html>
