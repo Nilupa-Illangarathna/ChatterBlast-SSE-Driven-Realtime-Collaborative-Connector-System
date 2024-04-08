@@ -21,6 +21,42 @@
       color: #333;
     }
 
+    .alert-container {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 300px;
+      height: 200px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+    }
+
+    .alert-box {
+      background-color: #d6d6d5;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 16px 16px rgba(0, 0, 0, 0.15);
+      font-size: 1.5em;
+      color: #333;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: relative;
+    }
+
+    .close-button {
+      cursor: pointer;
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      padding: 5px;
+    }
+
     .left-container {
       width: 70%;
       position: relative;
@@ -31,8 +67,6 @@
       background-color: #fff;
       min-height: 100vh;
     }
-
-
 
     .background-image-container {
       position: relative;
@@ -59,7 +93,6 @@
       display: flex;
       flex-wrap: wrap;
       margin: 0px;
-      /* height:40vh; */
       margin-bottom: 16px;
       overflow-y: auto;
     }
@@ -104,12 +137,13 @@
     }
 
     .input-container {
-      width: 400px;
+      width: 700px;
       margin-top: 20px;
       margin-bottom: 20px;
       display: flex;
       align-items: center;
     }
+
 
     .input-container input {
       margin-right: 10px;
@@ -161,6 +195,12 @@
       color: #4285F4;
     }
 
+    .endroom-text {
+      font-size: 1.5em;
+      color: rgb(133, 246, 133);
+      font-weight: bold;
+    }
+
     .voted-value-column {
       display: none;
     }
@@ -186,36 +226,104 @@
       font-weight: bold;
       color: #656363;
     }
+
+    .tile.highlighted {
+      background-color: rgb(242, 215, 142);
+      box-shadow: 0 0 10px rgba(229, 192, 81, 0.5);
+    }
+
+    .tile.disabled {
+      opacity: 0.5;
+      pointer-events: none;
+      cursor: not-allowed;
+    }
+
+    .new-room-alert-container {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 300px;
+      height: 200px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+    }
+
+    .new-room-alert-box {
+      background-color: #d6d6d5;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 16px 16px rgba(0, 0, 0, 0.15);
+      font-size: 1.5em;
+      color: #333;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-around;
+      align-items: center;
+      position: relative;
+    }
+
+    .button-container {
+      display: flex;
+      justify-content: space-around;
+      width: 100%;
+      margin-top: 20px;
+    }
+
+    .button-container button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1em;
+      transition: background-color 0.3s;
+    }
+
+    .button-container button:hover {
+      background-color: #ccc;
+    }
+
+    .close-button {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      cursor: pointer;
+      color: #007bff;
+      font-size: 1.2em;
+    }
   </style>
 </head>
 
 <body>
   <div class="left-container"
     style="background-image: url('/admin-joiner-main-background'); background-size: 100% auto; background-position: top;">
-
     <div class="padded zoomed-out-container">
       <h2>Welcome <%= username %>
       </h2>
-      <h1>Admin User Interface</h1>
       <p>Admin: <%= username %>
       </p>
+      <div class="btn-group" role="group" aria-label="Sequence Type">
+        <button id="sequenceSelector1" type="button" class="btn btn-secondary"
+          onclick="updateSequences('tShirtSizes')">T-Shirt</button>
+        <button id="sequenceSelector2" type="button" class="btn btn-secondary"
+          onclick="updateSequences('sequence')">Sequence</button>
+        <button id="sequenceSelector3" type="button" class="btn btn-secondary"
+          onclick="updateSequences('fibonacci')">Fibonacci</button>
+        <button id="sequenceSelector4" type="button" class="btn btn-secondary"
+          onclick="updateSequences('custom')">Custom</button>
+      </div>
 
 
-        <div class="btn-group" role="group" aria-label="Sequence Type">
-          <button type="button" class="btn btn-secondary" onclick="updateSequences('tShirtSizes')">T-Shirt</button>
-          <button type="button" class="btn btn-secondary" onclick="updateSequences('sequence1')">Seq 1</button>
-          <button type="button" class="btn btn-secondary" onclick="updateSequences('sequence2')">Seq 2</button>
-          <button type="button" class="btn btn-secondary" onclick="updateSequences('fibonacci')">Fibonacci</button>
-          <button type="button" class="btn btn-secondary" onclick="updateSequences('custom')">Custom</button>
-        </div>
-
-
-          <button class="btn btn-info copy-link-button" onclick="copyToClipboard('<%= roomData.room_url %>')"
-            id="copyLinkButton" style="display: none;">Copy
-            Link</button>
+      <button id="copyLinkButton" class="btn btn-info copy-link-button"
+        onclick="copyToClipboard('<%= roomData.room_url %>')" id="copyLinkButton" style="display: none;">Copy
+        Link</button>
 
       <div class="input-container">
-        <input type="text" id="sequenceInput" class="form-control" placeholder="Enter a value">
+        <input type="text" id="sequenceInput" class="form-control" placeholder="Maximum Value">
         <input type="text" id="descriptionInput" class="form-control" placeholder="Enter a description">
       </div>
 
@@ -268,25 +376,220 @@
       </div>
       <form id="adminMessageForm" action="/send-admin-message" method="POST">
         <button type="submit" class="btn btn-primary zoomed-out-container" onclick="submitForm()" id="submitButton"
-          disabled>Submit</button>
+          disabled>Open room</button>
       </form>
 
       <button class="btn btn-success calculate-button zoomed-out-container"
-        onclick="calculateAverage(randomNumber, '<%= roomData %>', false)" id="calculateButton"
-        disabled>Calculate</button>
+        onclick="calculateAverage(randomNumber, '<%= roomData %>', false)" id="calculateButton" disabled>Show
+        Votes</button>
+      <br>
+      <button class="btn calculate-button zoomed-out-container" style="background-color: grey;"
+        onclick="newRoomSession()" id="newVotingSession" disabled>Start New Voting Session</button>
       <div class="random-number" id="randomNumber"></div>
+      <div class="endroom-text" id="endroom-id"></div>
     </div>
+    <div class="alert-container" id="alertContainer" style="display: none;">
+      <div class="alert-box">
+        <div>Room Created</div>
+        <span class="close-button" onclick="closeAlert1()">Close</span>
+      </div>
+    </div>
+    <form id="joinForm" action="/send-join-message" method="POST" className="hiddenOne">
+      <input type="hidden" name="roomData" value='<%= JSON.stringify(roomData) %>'>
+      <input type="hidden" name="username" value='<%= username %>'>
+    </form>
   </div>
 
-
-
-
-
-
   <script>
+    let sessionOn = true;
+    let tilesClickable = true;
+    let timerInterval;
+    let timerFrozen = false;
+    let remainingTime = 0;
+
+    let updatedSequence; 
+    let descriptionInput = "";
+    let toggleTimerCheckbox = false; 
+    let hours = 0;
+    let minutes = 0;
+    let seconds = 0;
+    let joinedPeople = [];
+    let sequenceSelected = false;
+
+
+    function freezeAdminUI(action) {
+      if (action === "open_room") {
+        document.getElementById('sequenceSelector1').disabled = true;
+        document.getElementById('sequenceSelector2').disabled = true;
+        document.getElementById('sequenceSelector3').disabled = true;
+        document.getElementById('sequenceSelector4').disabled = true;
+        document.getElementById('copyLinkButton').disabled = false;
+        document.getElementById('sequenceInput').disabled = true;
+        document.getElementById('descriptionInput').disabled = true;
+        document.getElementById('toggleTimer').disabled = true;
+        document.getElementById('hourInput').disabled = true;
+        document.getElementById('minuteInput').disabled = true;
+        document.getElementById('secondInput').disabled = true;
+        document.getElementById('countdownTimer').style.display = 'block';
+        document.getElementById('tileContainer').disabled = false;
+        document.getElementById('leaderboard').disabled = false;
+        document.getElementById('calculateButton').disabled = true;
+        document.getElementById('newVotingSession').disabled = true;
+        createNewSession();
+      }
+      else if (action === "show_votes") {
+        document.getElementById('sequenceSelector1').disabled = true;
+        document.getElementById('sequenceSelector2').disabled = true;
+        document.getElementById('sequenceSelector3').disabled = true;
+        document.getElementById('sequenceSelector4').disabled = true;
+        document.getElementById('copyLinkButton').disabled = true;
+        document.getElementById('sequenceInput').disabled = true;
+        document.getElementById('descriptionInput').disabled = true;
+        document.getElementById('toggleTimer').disabled = true;
+        document.getElementById('hourInput').disabled = true;
+        document.getElementById('minuteInput').disabled = true;
+        document.getElementById('secondInput').disabled = true;
+        document.getElementById('tileContainer').disabled = true;
+        document.getElementById('leaderboard').disabled = true;
+        document.getElementById('submitButton').disabled = true;
+        document.getElementById('calculateButton').disabled = true;
+        document.getElementById('newVotingSession').disabled = false;
+        toggleColumnVisibility('show');
+        const endRoomElement = document.getElementById('endroom-id');
+        endRoomElement.innerText = `Cards are revealed.Voting session ended.`;
+        freezePage();
+      }
+      else if (action === "new_votting_session") {
+        resetFormFields();
+        joinedPeople.forEach(person => {
+          if (person.votedValue !== "SpectatorEntity") {
+            person.voted = false;
+            person.votedValue = "";
+          }
+        });
+        updateLeaderboard(true, joinedPeople);
+        document.getElementById('sequenceSelector1').disabled = false;
+        document.getElementById('sequenceSelector2').disabled = false;
+        document.getElementById('sequenceSelector3').disabled = false;
+        document.getElementById('sequenceSelector4').disabled = false;
+        document.getElementById('copyLinkButton').disabled = false;
+        document.getElementById('sequenceInput').disabled = false;
+        document.getElementById('descriptionInput').disabled = false;
+        document.getElementById('toggleTimer').disabled = false;
+        document.getElementById('hourInput').disabled = false;
+        document.getElementById('minuteInput').disabled = false;
+        document.getElementById('secondInput').disabled = false;
+        document.getElementById('tileContainer').disabled = false;
+        document.getElementById('leaderboard').disabled = false;
+        document.getElementById('submitButton').disabled = true;
+        document.getElementById('calculateButton').disabled = true;
+        document.getElementById('newVotingSession').disabled = true;
+        const randomNumberElement = document.getElementById('randomNumber');
+        randomNumberElement.innerText = ``;
+        const endRoomElement = document.getElementById('endroom-id');
+        endRoomElement.innerText = ``;
+        toggleColumnVisibility('hide'); 
+        unfreezePage();
+      }
+    }
+
+    async function createNewSession() {
+      console.log("called");
+      try {
+        const response = await fetch('/create_new_session', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ roomData: decodeHtmlEntities('<%= roomData.room_url %>') }), // Replace 'your_room_data_here' with actual room data
+        });
+
+        if (!response.ok) {
+          throw new Error(`Error calling create_new_session: ${response.statusText}`);
+        }
+
+        console.log('create_new_session post method called successfully.');
+      } catch (error) {
+        console.error(`Error calling create_new_session: ${error.message}`);
+      }
+    }
+
+    function toggleColumnVisibility(action) {
+      const votedValueColumns = document.querySelectorAll('.voted-value-column');
+      votedValueColumns.forEach(column => {
+        column.style.display = action === 'hide' ? 'none' : 'table-cell';
+      });
+    }
+
+    function freezePage() {
+      sessionOn = false;
+      disableTiles();
+      freezeTimer();
+    }
+
+    function unfreezePage() {
+      sessionOn = true;
+      enableTiles();
+      unfreezeTimer();
+    }
+
+    function disableTiles() {
+      tilesClickable = false;
+      const allTiles = document.querySelectorAll('.tile');
+      allTiles.forEach(tile => {
+        tile.classList.add('disabled');
+        tile.removeAttribute('onclick');
+      });
+    }
+
+    function enableTiles() {
+      tilesClickable = true;
+      const allTiles = document.querySelectorAll('.tile');
+      allTiles.forEach(tile => {
+        tile.classList.remove('disabled');
+        tile.setAttribute('onclick', 'handleTileClick(this.dataset.content)');
+      });
+    }
+
+    function freezeTimer() {
+      timerFrozen = true;
+      console.log("freesze");
+    }
+
+    function unfreezeTimer() {
+      timerFrozen = false;
+      console.log("unfreesze");
+    }
+
+    function resetFormFields() {
+      document.getElementById('sequenceInput').value = '';
+      document.getElementById('sequenceInput').placeholder = 'Maximum Value';
+      document.getElementById('descriptionInput').value = '';
+      document.getElementById('toggleTimer').checked = false;
+      document.getElementById('hourInput').value = '0';
+      document.getElementById('minuteInput').value = '0';
+      document.getElementById('secondInput').value = '0';
+      document.getElementById('countdownTimer').style.display = 'none';
+      const tileContainer = document.getElementById('tileContainer');
+      tileContainer.innerHTML = '';
+
+      [].forEach((value) => {
+        const tile = document.createElement('div');
+        tile.classList.add('tile', 'small-tile', 'clickable');
+        tile.innerText = value;
+        tile.addEventListener('click', () => handleTileClick(tile, false));
+        tileContainer.appendChild(tile);
+      });
+    }
+
+
+    function newRoomSession() {
+      freezeAdminUI("new_votting_session");
+    }
+
+
     const tShirtSizes = ['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL'];
-    const sequence1 = [1, 2, 3, 4, 5];
-    const sequence2 = [2, 4, 6, 8, 10];
+    const sequence = [1, 2, 3, 4, 5];
     const fibonacci = [0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144];
     const custom = ['give', 'a', 'comma', 'seperated', 'string'];
 
@@ -308,63 +611,128 @@
       return Array.from({ length: count / 2 }, (_, i) => (i + 1) * 2);
     }
 
-    let joinedPeople = [];
 
-    let updatedSequence;
 
     function updateSequences(type) {
       const inputValue = document.getElementById('sequenceInput').value;
       const description = document.getElementById('descriptionInput').value;
-
+      const sequenceInput = document.getElementById('sequenceInput');
       switch (type) {
         case 'tShirtSizes':
           updatedSequence = tShirtSizes;
+          sequenceInput.setAttribute('disabled', 'disabled');
+          sequenceInput.placeholder = "Disabled";
+          sequenceSelected = true;
           break;
-        case 'sequence1':
+        case 'sequence':
           const seq1Count = parseInt(inputValue, 10) || 5;
           updatedSequence = Array.from({ length: seq1Count }, (_, i) => i + 1);
-          break;
-        case 'sequence2':
-          const seq2Count = parseInt(inputValue, 10) || 10;
-          updatedSequence = generateSequence2(seq2Count);
+          sequenceInput.placeholder = "End Value";
+          sequenceInput.removeAttribute('disabled');
+          sequenceSelected = true;
           break;
         case 'fibonacci':
           const fibonacciCount = parseInt(inputValue, 10) || 10;
           updatedSequence = generateFibonacci(fibonacciCount);
+          sequenceInput.removeAttribute('disabled');
+          sequenceInput.placeholder = "Maximum Value";
+          sequenceSelected = true;
           break;
         case 'custom':
           updatedSequence = inputValue.split(',').map(item => item.trim());
+          if (updatedSequence.length > 0) {
+            sequenceSelected = true;
+          } else {
+            sequenceSelected = false;
+          }
+          sequenceInput.removeAttribute('disabled');
+          sequenceInput.placeholder = "Enter a value list separated by commas";
           break;
+
         default:
           updatedSequence = [];
+          sequenceSelected = false;
       }
 
-      if (!updatedSequence.includes('?')) {
-        updatedSequence.push('?');
+      let finalArray3 = [];
+
+      let encounteredElements = {};
+
+      for (const element of updatedSequence) {
+        if (!encounteredElements[element]) {
+          finalArray3.push(element);
+          encounteredElements[element] = true;
+        }
       }
-      if (!updatedSequence.includes('🍵')) {
-        updatedSequence.push('🍵');
+
+      if (!finalArray3.includes('?')) {
+        finalArray3.push('?');
       }
+      if (!finalArray3.includes('🍵')) {
+        finalArray3.push('🍵');
+      }
+
+      async function handleTileClick(tile, spectator = false) {
+        if (!tilesClickable) {
+          return;
+        }
+        const formData = new FormData(joinForm);
+        const joinMessage = spectator ? "SpectatorEntity" : tile.innerText;
+        const roomData = formData.get('roomData');
+        const username = formData.get('username');
+        const isAdmin = true;
+
+        try {
+          const response = await fetch('/send-join-message', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ username, joinMessage, roomData, isAdmin }),
+          });
+
+          if (!response.ok) {
+            throw new Error(`Error sending join message: ${response.statusText}`);
+          }
+
+          const allTiles = document.querySelectorAll('.tile');
+          allTiles.forEach(tile => {
+            tile.classList.remove('highlighted');
+          });
+
+          tile.classList.add('highlighted');
+
+        } catch (error) {
+          console.error(`Error sending join message: ${error.message}`);
+        }
+      }
+
+
+
 
       const tileContainer = document.getElementById('tileContainer');
       tileContainer.innerHTML = '';
-      updatedSequence.forEach((value) => {
+
+      finalArray3.forEach((value) => {
         const tile = document.createElement('div');
         tile.classList.add('tile', 'small-tile', 'clickable');
         tile.innerText = value;
-        tile.addEventListener('click', () => {
-          handleTileClick(tile);
-        });
+        tile.addEventListener('click', () => handleTileClick(tile, false));
         tileContainer.appendChild(tile);
       });
 
       document.getElementById('submitButton').disabled = !canEnableSubmitButton() || description.trim() === '';
       document.getElementById('calculateButton').disabled = true;
-      // document.getElementById('copyLinkButton').disabled = !canEnableCopyLinkButton();
-      // document.getElementById('copyLinkButton').style.display = 'block';
     }
 
 
+    function checkDescriptionInput() {
+      const submitButton = document.getElementById('submitButton');
+      descriptionInput = document.getElementById('descriptionInput');
+      submitButton.disabled = !descriptionInput.value.trim() || !canEnableSubmitButton();
+    }
+
+    document.getElementById('descriptionInput').addEventListener('input', checkDescriptionInput);
 
     function updateLeaderboard(shouldRender = false, joinedPeople = []) {
       console.log("leaderboard data: ", joinedPeople);
@@ -382,16 +750,16 @@
       joinedPeople.forEach(person => {
         const row = document.createElement('tr');
         row.innerHTML = `
-      <td>${person.joinerName}</td>
-      <td>${person.voted ? '✅' : '❌'}</td>
-      <td>
-        <label class="switch">
-          <input type="checkbox" ${person.spectator ? 'checked' : ''} onchange="toggleSpectator('${person.joinerName}', this.checked)">
-          <span class="slider round"></span>
-        </label>
-      </td>
-      <td class="voted-value-column">${person.votedValue === "SpectatorEntity" ? "🕵️" : person.voted ? person.votedValue : "⛔"}</td>
-    `;
+        <td>${person.joinerName}</td>
+        <td>${person.voted ? '✅' : '❌'}</td>
+        <td>
+          <label class="switch">
+            <input type="checkbox" ${person.spectator ? 'checked' : ''} onchange="toggleSpectator('${person.joinerName}', this.checked)">
+            <span class="slider round"></span>
+          </label>
+        </td>
+        <td class="voted-value-column">${person.votedValue === "SpectatorEntity" ? "🕵️" : person.voted ? person.votedValue : "⛔"}</td>
+      `;
         leaderboardBody.appendChild(row);
       });
 
@@ -405,7 +773,7 @@
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ joiner_Name: joinerName, is_Checked: isChecked, roomUrl: decodeHtmlEntities('<%= roomData.room_url %>') }),
+        body: JSON.stringify({ joiner_Name: joinerName, is_Checked: isChecked, roomUrl: decodeHtmlEntities('<%= roomData.room_url %>'), username: decodeHtmlEntities('<%= username %>') }),
       })
         .then(response => {
           if (!response.ok) {
@@ -418,15 +786,10 @@
         });
     }
 
-
-
-
-    let joinedPeopleTemp = [];
-
     function getVotedValuesArray() {
       const votedValuesArray = [];
 
-      joinedPeopleTemp.forEach(person => {
+      joinedPeople.forEach(person => {
         if (person.voted) {
           votedValuesArray.push(person.votedValue);
         }
@@ -435,21 +798,25 @@
       return votedValuesArray;
     }
 
-
     function submitForm() {
       const leaderboard = document.getElementById('leaderboard');
-
       leaderboard.style.display = 'table';
-
       const votedValueColumns = document.querySelectorAll('.voted-value-column');
       votedValueColumns.forEach(column => {
         column.style.display = 'none';
       });
 
-      // document.getElementById('copyLinkButton').disabled = !canEnableSubmitButton();
       document.getElementById('copyLinkButton').style.display = 'inline-block';
       const sequenceString = getCurrentSequence().join(', ');
       console.log('Sequence:', sequenceString);
+
+      freezeAdminUI("open_room");
+
+      setTimeout(() => {
+        document.getElementById('submitButton').disabled = true;
+      }, 1000);
+
+      printVariables();
     }
 
 
@@ -471,10 +838,6 @@
       return description;
     }
 
-
-
-
-    // admin-ui.ejs
     function calculateAverage(randomNumber, roomData, timerExpired = false) {
 
       const votedValueColumns = document.querySelectorAll('.voted-value-column');
@@ -483,11 +846,8 @@
       });
 
       const randomNumberElement = document.getElementById('randomNumber');
-
       const averageNumber = calculateAverageOrMedian(getVotedValuesArray(), timerExpired);
-
       randomNumberElement.innerText = `Average: ${averageNumber}`;
-
       document.getElementById('calculateButton').disabled = true;
 
       fetch('/broadcast-data', {
@@ -495,7 +855,7 @@
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ randomNumber: averageNumber, roomData: decodeHtmlEntities('<%= roomData.room_url %>'), joinedPeople: joinedPeopleTemp }),
+        body: JSON.stringify({ randomNumber: averageNumber, roomData: decodeHtmlEntities('<%= roomData.room_url %>'), joinedPeople: joinedPeople }),
       })
         .then(response => {
           if (!response.ok) {
@@ -507,13 +867,34 @@
           console.error(`Error sending data to server: ${error.message}`);
         });
 
+
+      fetch('/update-timer-enabled', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ roomData: decodeHtmlEntities('<%= roomData.room_url %>'), timerEnabled: false }),
+      })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`Error updating timer state: ${response.statusText}`);
+          }
+          console.log('Timer state updated successfully.');
+        })
+        .catch(error => {
+          console.error(`Error updating timer state: ${error.message}`);
+        });
+
       document.getElementById('calculateButton').disabled = true;
+
+      freezeAdminUI("show_votes");
     }
 
 
 
     function canEnableSubmitButton() {
-      return true;
+
+      return sequenceSelected;
     }
 
     function canEnableCalculateButton() {
@@ -527,34 +908,42 @@
     function startCountdownTimer(timerId, timestamp, timerValue) {
       const timerElement = document.getElementById(timerId);
 
+      clearInterval(timerInterval);
+
       const currentTimestamp = new Date().getTime();
-
       const timeGap = currentTimestamp - timestamp;
-
-
       const startTime = Math.max(timeGap, 0);
-
-
       const targetTimestamp = timerValue * 1000;
-      const timerInterval = setInterval(() => {
-        const currentTimestampInterval = new Date().getTime();
 
-        const remainingTime = Math.max(targetTimestamp - startTime - (currentTimestampInterval - currentTimestamp), 0);
+      timerInterval = setInterval(() => {
+        if (!timerFrozen) {
+          const currentTimestampInterval = new Date().getTime();
+          remainingTime = Math.max(targetTimestamp - startTime - (currentTimestampInterval - currentTimestamp), 0);
+          const hours = Math.floor(remainingTime / (1000 * 60 * 60));
+          const minutes = Math.floor((remainingTime % (1000 * 60 * 60)) / (1000 * 60));
+          const seconds = Math.floor((remainingTime % (1000 * 60)) / 1000);
 
-        const hours = Math.floor(remainingTime / (1000 * 60 * 60));
-        const minutes = Math.floor((remainingTime % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((remainingTime % (1000 * 60)) / 1000);
+          if (hours == 0 && minutes == 0 && seconds == 0) {
+            setTime = false;
+          } else {
+            setTime = true;
+          }
 
-        timerElement.innerText = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-        if (remainingTime === 0) {
-          clearInterval(timerInterval);
-          timerElement.innerText = 'Timer expired!';
-
-          calculateAverage(randomNumber, decodeHtmlEntities('<%= roomData %>'), true);
+          timerElement.innerText = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+          if (remainingTime === 0) {
+            clearInterval(timerInterval);
+            timerElement.innerText = 'Timer expired!';
+            calculateAverage(randomNumber, decodeHtmlEntities('<%= roomData %>'), true);
+          }
         }
       }, 1000);
     }
 
+
+
+    function stopCountdownTimer() {
+      clearInterval(timerInterval);
+    }
 
     function calculateAverageOrMedian(sequence, timerExpired) {
 
@@ -585,13 +974,15 @@
       adminMessageForm.addEventListener('submit', async (event) => {
         event.preventDefault();
 
+
+
         const formData = new FormData(adminMessageForm);
         const sequenceInput = getCurrentSequence().join(', ');
         const description = getCurrentDescription();
 
-        const hours = parseInt(document.getElementById('hourInput').value);
-        const minutes = parseInt(document.getElementById('minuteInput').value);
-        const seconds = parseInt(document.getElementById('secondInput').value);
+        hours = parseInt(document.getElementById('hourInput').value);
+        minutes = parseInt(document.getElementById('minuteInput').value);
+        seconds = parseInt(document.getElementById('secondInput').value);
 
         const timerPrintValue = (hours * 3600) + (minutes * 60) + seconds;
         const currentPrintTime = new Date().toLocaleString();
@@ -601,10 +992,16 @@
         const timestamp = Date.now();
         const timerValue = parseInt(document.getElementById('hourInput').value) * 3600 + parseInt(document.getElementById('minuteInput').value) * 60 + parseInt(document.getElementById('secondInput').value);
 
-        const toggleTimerCheckbox = document.getElementById('toggleTimer');
+        console.log(timerValue);
+        toggleTimerCheckbox = document.getElementById('toggleTimer');
         const isChecked = toggleTimerCheckbox.checked;
 
+
+        stopCountdownTimer();
+
+
         if (isChecked && timerValue > 0) {
+          timerFrozen = false;
           console.log("isChecked : ", isChecked, "and timerValue : ", timerValue);
           timerIntervalId = startCountdownTimer('countdownTimer', timestamp, timerValue);
         }
@@ -622,7 +1019,8 @@
               description,
               timerEnabled: isChecked,
               timestamp: isChecked ? timestamp : 0,
-              timerValue: isChecked ? timerValue : 0
+              timerValue: isChecked ? timerValue : 0,
+              isAdmin: true,
             }
             ),
           });
@@ -637,8 +1035,23 @@
         } catch (error) {
           console.error(`Error sending admin message: ${error.message}`);
         }
+
+
+
+        document.getElementById('alertContainer').style.display = 'flex';
+
+        setTimeout(() => {
+          closeAlert1();
+        }, 3000);
+
+        setTimeout(closeAlert, 5000);
+        createNewSession();
       });
     });
+
+    function closeAlert1() {
+      document.getElementById('alertContainer').style.display = 'none';
+    }
 
     function copyToClipboard(url) {
       const el = document.createElement('textarea');
@@ -656,11 +1069,8 @@
       return txt.value;
     }
 
-    const eventSource = new EventSource('/sse');
 
-    eventSource.onmessage = async (event) => {
-      const eventData = JSON.parse(event.data);
-
+    async function updatePage(eventData) {
       switch (eventData.action) {
         case 'newJoiner':
           if (eventData.url === decodeHtmlEntities('<%= roomData.room_url %>')) {
@@ -682,10 +1092,11 @@
 
         case 'updateJoiners':
           if (eventData.url === decodeHtmlEntities('<%= roomData.room_url %>')) {
-            joinedPeopleTemp = eventData.joinersStructure;
+            joinedPeople = eventData.joinersStructure;
 
             updateLeaderboard(true, eventData.joinersStructure);
             updateJoinersStructure(eventData.joinersStructure);
+            console.log("IsTimerEnabled Value is : ", eventData.isTimerEnabled);
           }
           break;
 
@@ -694,10 +1105,22 @@
             updateSequence(eventData.sequence);
           }
           break;
+
         default:
           console.log(`Unknown action: ${eventData.action}`);
           break;
       }
+    }
+
+    const eventSource = new EventSource('/sse');
+
+    eventSource.onmessage = async (event) => {
+      const eventData = JSON.parse(event.data);
+
+      if (sessionOn) {
+        updatePage(eventData);
+      }
+
     };
 
     function updateJoinersStructure(joinersStructure) {
