@@ -323,7 +323,9 @@
       const timerValue = decodeHtmlEntities('<%= roomData.timer_value %>');
 
       if (isChecked && timerValue > 0) {
-        timerIntervalId = startCountdownTimer('countdownTimer', timestamp, timerValue);
+        // timerIntervalId = startCountdownTimer('countdownTimer', timestamp, timerValue);
+        updateRemainingTime(timestamp, timerValue);
+        startCountdownTimer('countdownTimer');
       }
     }
 
@@ -354,33 +356,31 @@
       randomNumberElement.innerText = `Average : ${getRandomNumber}`;
     }
 
-    function startCountdownTimer(timerId, timestamp, timerValue) {
-      const timerElement = document.getElementById(timerId);
+    let remainingTime = 0; // Global variable for remaining time
+    // let timerInterval; // Global variable to store the interval ID
+    let timerPaused = false; // Flag to indicate whether the timer is paused
 
-
-
+    function updateRemainingTime(timestamp, timerValue) {
       const currentTimestamp = new Date().getTime();
       const timeGap = currentTimestamp - timestamp;
       const startTime = Math.max(timeGap, 0);
       const targetTimestamp = timerValue * 1000;
+      remainingTime = Math.max(targetTimestamp - startTime, 0);
+    }
+
+    function startCountdownTimer(timerId) {
+      const timerElement = document.getElementById(timerId);
 
       timerInterval = setInterval(() => {
-        if (!timerFrozen) {
-          const currentTimestampInterval = new Date().getTime();
-
-          const remainingTime = Math.max(targetTimestamp - startTime - (currentTimestampInterval - currentTimestamp), 0);
-
+        if (!timerPaused && remainingTime > 0) {
           const hours = Math.floor(remainingTime / (1000 * 60 * 60));
           const minutes = Math.floor((remainingTime % (1000 * 60 * 60)) / (1000 * 60));
           const seconds = Math.floor((remainingTime % (1000 * 60)) / 1000);
 
-          if (hours == 0 && minutes == 0 && seconds == 0) {
-            setTime = false;
-          } else {
-            setTime = true;
-          }
-
           timerElement.innerText = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+          remainingTime -= 1000; // Decrease remaining time by 1 second
+
           if (remainingTime === 0) {
             clearInterval(timerInterval);
             timerElement.innerText = 'Timer expired!';
@@ -388,6 +388,21 @@
         }
       }, 1000);
     }
+
+    function resetTimer(timestamp, timerValue) {
+      updateRemainingTime(timestamp, timerValue);
+    }
+
+    function pauseTimer() {
+      clearInterval(timerInterval);
+      timerPaused = true;
+    }
+
+    function resumeTimer() {
+      timerPaused = false;
+      startCountdownTimer('countdownTimer');
+    }
+
 
     function stopCountdownTimer() {
       clearInterval(timerInterval);
@@ -593,6 +608,7 @@
 
       leaderboard.style.display = 'table';
 
+      pauseTimer();
       freezePage();
     }
 
@@ -659,9 +675,13 @@
       console.error('isChecked:', isChecked);
       console.error('timerValue:', timerValue);
       console.error('timestamp:', timestamp);
+
+      updateRemainingTime(timestamp, timerValue);
+
+      resumeTimer();
       // stopCountdownTimer();
       if (isChecked && timerValue > 0) {
-        startCountdownTimer('countdownTimer', timestamp, timerValue);
+        // startCountdownTimer('countdownTimer', timestamp, timerValue);
       }
     }
 
